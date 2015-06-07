@@ -109,7 +109,7 @@ namespace IniLanguageService
                 {
                     get
                     {
-                        return $"Merge properties into the first '{_base.NameToken.Span.Span.GetText()}' section";
+                        return $"Merge declarations into the first '{_base.NameToken.Span.Span.GetText()}' section";
                     }
                 }
 

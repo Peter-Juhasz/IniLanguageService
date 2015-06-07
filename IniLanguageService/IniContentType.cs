@@ -15,7 +15,7 @@ namespace IniLanguageService
     internal static class IniContentTypeDefinition
     {
         // This disables "The field is never used" compiler's warning. Justification: the field is used by MEF.
-#pragma warning disable 169
+#pragma warning disable 649
 
         [Export]
         [Name("INI")]
@@ -27,6 +27,6 @@ namespace IniLanguageService
         [ContentType(ContentTypes.Ini)]
         internal static FileExtensionToContentTypeDefinition iniFileExtensionToContentTypeDefinition;
 
-#pragma warning restore 169
+#pragma warning restore 649
     }
 }

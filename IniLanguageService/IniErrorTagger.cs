@@ -76,7 +76,7 @@ namespace IniLanguageService
                 {
                     yield return new TagSpan<IErrorTag>(
                         section.NameToken.Span.Span,
-                        new ErrorTag(PredefinedErrorTypeNames.Warning, $"Multiple declaration of section '{name}'")
+                        new ErrorTag(PredefinedErrorTypeNames.Warning, $"Multiple declarations of section '{name}'")
                     );
                 }
             }
@@ -116,7 +116,7 @@ namespace IniLanguageService
                     {
                         yield return new TagSpan<IErrorTag>(
                             property.PropertyNameToken.Span.Span,
-                            new ErrorTag(PredefinedErrorTypeNames.Warning, $"Multiple declaration of property '{name}'")
+                            new ErrorTag(PredefinedErrorTypeNames.Warning, $"Multiple declarations of property '{name}'")
                         );
                     }
                 }
