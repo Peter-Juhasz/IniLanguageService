@@ -45,7 +45,7 @@ namespace IniLanguageService
 
         private void OnBufferChanged(object sender, TextContentChangedEventArgs e)
         {
-            ITextBuffer buffer = (sender as ITextBuffer);
+            ITextBuffer buffer = sender as ITextBuffer;
 
             IniDocumentSyntax syntax = buffer.Properties.GetOrCreateSingletonProperty<IniDocumentSyntax>("Syntax", () => Reparse(buffer.CurrentSnapshot));
             if (syntax.Snapshot != buffer.CurrentSnapshot)
@@ -212,14 +212,14 @@ namespace IniLanguageService
 
         public static SnapshotSpan ReadWhiteSpace(this ITextSnapshot snapshot, ref SnapshotPoint point)
         {
-            return snapshot.ReadToLineEndWhile(ref point, Char.IsWhiteSpace);
+            return snapshot.ReadToLineEndWhile(ref point, Char.IsWhiteSpace, rewindWhiteSpace: false);
         }
 
         public static SnapshotSpan ReadToCommentOrLineEndWhile(this ITextSnapshot snapshot, ref SnapshotPoint point, Predicate<char> predicate)
         {
             return snapshot.ReadToLineEndWhile(ref point, c => c != ';' && predicate(c));
         }
-        public static SnapshotSpan ReadToLineEndWhile(this ITextSnapshot snapshot, ref SnapshotPoint point, Predicate<char> predicate)
+        public static SnapshotSpan ReadToLineEndWhile(this ITextSnapshot snapshot, ref SnapshotPoint point, Predicate<char> predicate, bool rewindWhiteSpace = true)
         {
             SnapshotPoint start = point;
 
@@ -229,6 +229,15 @@ namespace IniLanguageService
                 predicate(point.GetChar())
             )
                 point = point + 1;
+
+            if (rewindWhiteSpace)
+            {
+                while (
+                    point - 1 >= start &&
+                    Char.IsWhiteSpace((point - 1).GetChar())
+                )
+                    point = point - 1;
+            }
 
             return new SnapshotSpan(start, point);
         }

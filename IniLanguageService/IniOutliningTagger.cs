@@ -31,12 +31,16 @@ namespace IniLanguageService
                     where section.Properties.Count > 0
                     where spans.Any(s => section.Span.IntersectsWith(s))
                     let last = section.Properties.Last()
+                    let collapsibleSpan = new SnapshotSpan(
+                        section.ClosingBracketToken.Span.Span.End,
+                        (last.TrailingTrivia ?? last.PropertyValueToken).Span.Span.End
+                    )
                     select new TagSpan<IOutliningRegionTag>(
-                        new SnapshotSpan(
-                            section.ClosingBracketToken.Span.Span.End,
-                            (last.TrailingTrivia ?? last.PropertyValueToken).Span.Span.End
-                        ),
-                        new OutliningRegionTag("...", "...")
+                        collapsibleSpan,
+                        new OutliningRegionTag(
+                            collapsedForm: "...",
+                            collapsedHintForm: collapsibleSpan.GetText().Trim()
+                        )
                     )
                 ;
             }
