@@ -13,7 +13,7 @@ using System.Windows.Media;
 
 namespace IniLanguageService
 {
-    //[Export(typeof(ISuggestedActionsSourceProvider))]
+    [Export(typeof(ISuggestedActionsSourceProvider))]
     [Name("Ini Suggested Actions")]
     [ContentType(ContentTypes.Ini)]
     public class IniSuggestedActionsProvider : ISuggestedActionsSourceProvider
@@ -39,17 +39,19 @@ namespace IniLanguageService
             {
                 ITextBuffer buffer = range.Snapshot.TextBuffer;
                 IniDocumentSyntax syntax = buffer.Properties.GetProperty<IniDocumentSyntax>("Syntax");
-
-                IniSectionSyntax section = syntax.Sections
-                    .Where(s => !s.NameToken.IsMissing)
-                    .First(s => s.NameToken.Span.Span.IntersectsWith(range));
-
+                
                 yield return new SuggestedActionSet(
-                    new []
-                    {
-                        new MovePropertiesToFirstSection(section, section)
-                    },
-                    applicableToSpan: section.NameToken.Span.Span
+                    (
+                        from section in syntax.Sections
+                        where !section.NameToken.IsMissing
+                        where section.NameToken.Span.Span.IntersectsWith(range)
+                        let name = section.NameToken.Span.Span.GetText()
+                        let firstSection = syntax.Sections.First(
+                            s => s.NameToken.Span.Span.GetText().Equals(name, StringComparison.InvariantCultureIgnoreCase)
+                        )
+                        where section != firstSection
+                        select new MovePropertiesToFirstSection(firstSection, section)
+                    ).ToArray()
                 );
             }
 
@@ -59,9 +61,17 @@ namespace IniLanguageService
                 IniDocumentSyntax syntax = buffer.Properties.GetProperty<IniDocumentSyntax>("Syntax");
 
                 return Task.FromResult(
-                    syntax.Sections.Any(
-                        s => !s.NameToken.IsMissing && s.NameToken.Span.Span.IntersectsWith(range)
-                    )
+                    (
+                        from section in syntax.Sections
+                        where !section.NameToken.IsMissing
+                        where section.NameToken.Span.Span.IntersectsWith(range)
+                        let name = section.NameToken.Span.Span.GetText()
+                        let firstSection = syntax.Sections.First(
+                            s => s.NameToken.Span.Span.GetText().Equals(name, StringComparison.InvariantCultureIgnoreCase)
+                        )
+                        where section != firstSection
+                        select section
+                    ).Any()
                 );
             }
 
@@ -80,8 +90,12 @@ namespace IniLanguageService
             {
                 public MovePropertiesToFirstSection(IniSectionSyntax baseSection, IniSectionSyntax otherSection)
                 {
-
+                    _base = baseSection;
+                    _other = otherSection;
                 }
+
+                private readonly IniSectionSyntax _base;
+                private readonly IniSectionSyntax _other;
 
                 public IEnumerable<SuggestedActionSet> ActionSets
                 {
@@ -95,7 +109,7 @@ namespace IniLanguageService
                 {
                     get
                     {
-                        return "Merge properties into the first section";
+                        return $"Merge properties into the first '{_base.NameToken.Span.Span.GetText()}' section";
                     }
                 }
 
@@ -130,7 +144,21 @@ namespace IniLanguageService
 
                 public void Invoke(CancellationToken cancellationToken)
                 {
-                    throw new NotImplementedException();
+                    ITextBuffer buffer = _base.Document.Snapshot.TextBuffer;
+
+                    using (ITextEdit edit = buffer.CreateEdit())
+                    {
+                        edit.Insert(
+                            _base.Span.End,
+                            new SnapshotSpan(
+                                _other.ClosingBracketToken.Span.Span.End,
+                                _other.Span.End
+                            ).GetText()
+                        );
+                        edit.Delete(_other.Span);
+                        
+                        edit.Apply();
+                    }
                 }
 
 
