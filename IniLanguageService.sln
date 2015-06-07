@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.22823.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IniLanguageService", "IniLanguageService\IniLanguageService.csproj", "{DFA71A99-CD40-4499-8F2B-B3BA7FDA0F7D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DFA71A99-CD40-4499-8F2B-B3BA7FDA0F7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFA71A99-CD40-4499-8F2B-B3BA7FDA0F7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFA71A99-CD40-4499-8F2B-B3BA7FDA0F7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFA71A99-CD40-4499-8F2B-B3BA7FDA0F7D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
