@@ -46,13 +46,42 @@ namespace IniLanguageService
         private void OnBufferChanged(object sender, TextContentChangedEventArgs e)
         {
             ITextBuffer buffer = sender as ITextBuffer;
-
+            
+            // reparse
             IniDocumentSyntax syntax = buffer.Properties.GetOrCreateSingletonProperty<IniDocumentSyntax>("Syntax", () => Reparse(buffer.CurrentSnapshot));
             if (syntax.Snapshot != buffer.CurrentSnapshot)
             {
                 buffer.Properties.RemoveProperty("Syntax");
                 syntax = Reparse(buffer.CurrentSnapshot);
                 buffer.Properties.AddProperty("Syntax", syntax);
+            }
+
+            // format
+            if (e.Changes.Count == 1)
+            {
+                ITextChange change = e.Changes.Single();
+
+                // format on ']'
+                if (change.OldLength == 0 && change.NewText == "]")
+                {
+                    IniSectionSyntax section = syntax.Sections
+                        .FirstOrDefault(s => s.ClosingBracketToken.Span.Span == change.NewSpan);
+
+                    if (section != null)
+                    {
+                        // remove unnecessary whitespace
+                        using (ITextEdit format = buffer.CreateEdit())
+                        {
+                            if (section.OpeningBracketToken.Span.Span.End != section.NameToken.Span.Span.Start)
+                                format.Delete(new SnapshotSpan(section.OpeningBracketToken.Span.Span.End, section.NameToken.Span.Span.Start));
+                            
+                            if (section.NameToken.Span.Span.End != section.ClosingBracketToken.Span.Span.Start)
+                                format.Delete(new SnapshotSpan(section.NameToken.Span.Span.End, section.ClosingBracketToken.Span.Span.Start));
+
+                            format.Apply();
+                        }
+                    }
+                }
             }
         }
 
