@@ -67,12 +67,11 @@ namespace IniLanguageService
                 string name = section.NameToken.Span.Span.GetText();
 
                 var other = section.Document.Sections
-                    .Where(s => !s.NameToken.IsMissing)
                     .FirstOrDefault(
                         s => s.NameToken.Span.Span.GetText().Equals(name, StringComparison.InvariantCultureIgnoreCase)
                     );
 
-                if (other != section)
+                if (other != null && other != section)
                 {
                     yield return new TagSpan<IErrorTag>(
                         section.NameToken.Span.Span,
@@ -104,15 +103,17 @@ namespace IniLanguageService
 
 
                     // check for duplicate properties
+                    string sectionName = property.Section.NameToken.Span.Span.GetText();
                     string name = property.PropertyNameToken.Span.Span.GetText();
 
-                    var other = property.Section.Properties
-                        .Where(p => !p.PropertyNameToken.IsMissing)
+                    var other = property.Section.Document.Sections
+                        .Where(s => s.NameToken.Span.Span.GetText().Equals(sectionName, StringComparison.InvariantCultureIgnoreCase))
+                        .SelectMany(s => s.Properties)
                         .FirstOrDefault(
                             p => p.PropertyNameToken.Span.Span.GetText().Equals(name, StringComparison.InvariantCultureIgnoreCase)
                         );
 
-                    if (other != property)
+                    if (other != null && other != property)
                     {
                         yield return new TagSpan<IErrorTag>(
                             property.PropertyNameToken.Span.Span,
