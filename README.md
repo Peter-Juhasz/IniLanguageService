@@ -3,5 +3,20 @@ This extension adds support for editing .ini configuration files. It is built on
 
 Features:
  - Syntax highlighting and validation
- - Outlining
  - Bracket matching
+ - Outlining
+ - Reference highlighting (duplicates)
+ - Automatic formatting (partial while typing)
+ - Diagnostics, code fixes and code refactorings
+ - Quick info
+
+Diagnostics:
+ - Multiple declarations of a section
+ - Redundant property declaration
+
+Code Fixes:
+ - Remove redundant property declaration
+ - Merge declarations into first section
+
+Code Refactorings:
+ - Remove empty property declaration
