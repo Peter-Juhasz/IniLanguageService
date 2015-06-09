@@ -51,26 +51,53 @@ namespace IniLanguageService
 
                 // find section
                 IniSectionSyntax section = syntax.Sections
-                    .Where(s => !s.NameToken.IsMissing)
-                    .FirstOrDefault(s => s.NameToken.Span.Span.Contains(caret));
+                    .FirstOrDefault(s => s.Span.Contains(caret));
 
+                // show duplicate sections
                 if (section != null)
                 {
-                    // show duplicate sections
-                    string name = section.NameToken.Value;
+                    string sectionName = section.NameToken.Value;
 
-                    var others = section.Document.Sections
-                        .Where(
-                            s => s.NameToken.Value.Equals(name, StringComparison.InvariantCultureIgnoreCase)
-                        )
-                        .ToList();
-
-                    if (others.Count > 1)
+                    // duplicate sections
+                    if (!section.NameToken.IsMissing &&
+                        section.NameToken.Span.Span.Contains(caret))
                     {
-                        return
-                            from s in others
-                            select new TagSpan<ITextMarkerTag>(s.NameToken.Span.Span, Tag)
-                        ;
+                        var others = section.Document.Sections
+                            .Where(
+                                s => s.NameToken.Value.Equals(sectionName, StringComparison.InvariantCultureIgnoreCase)
+                            )
+                            .ToList();
+
+                        if (others.Count > 1)
+                        {
+                            return
+                                from s in others
+                                select new TagSpan<ITextMarkerTag>(s.NameToken.Span.Span, Tag)
+                            ;
+                        }
+                    }
+
+                    // duplicate properties
+                    IniPropertySyntax property = section.Properties
+                        .FirstOrDefault(p => p.NameToken.Span.Span.Contains(caret));
+
+                    if (property != null)
+                    {
+                        string propertyName = property.NameToken.Value;
+
+                        var others = section.Document.Sections
+                            .Where(s => s.NameToken.Value.Equals(sectionName, StringComparison.InvariantCultureIgnoreCase))
+                            .SelectMany(s => s.Properties)
+                            .Where(p => p.NameToken.Value.Equals(propertyName, StringComparison.InvariantCultureIgnoreCase))
+                            .ToList();
+
+                        if (others.Count > 1)
+                        {
+                            return
+                                from s in others
+                                select new TagSpan<ITextMarkerTag>(s.NameToken.Span.Span, Tag)
+                            ;
+                        }
                     }
                 }
 
