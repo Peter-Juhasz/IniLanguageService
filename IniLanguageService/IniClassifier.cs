@@ -164,6 +164,10 @@ namespace IniLanguageService
                     ; // TODO: report error
             }
 
+            if (section != null && leadingTrivia.Any())
+                foreach (var trivia in leadingTrivia)
+                    section.TrailingTrivia.Add(trivia);
+
             root.Sections.Add(section);
 
             return root;

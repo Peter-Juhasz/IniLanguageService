@@ -66,10 +66,10 @@ namespace IniLanguageService
                     )
                     .FirstOrDefault(
                         s => s.OpeningBracketToken.Span.Span.Start == caret
-                          && s.ClosingBracketToken.Span.Span.End == caret
+                          || s.ClosingBracketToken.Span.Span.End == caret
                     );
 
-                if (section == null)
+                if (section != null)
                 {
                     yield return new TagSpan<ITextMarkerTag>(section.OpeningBracketToken.Span.Span, Tag);
                     yield return new TagSpan<ITextMarkerTag>(section.ClosingBracketToken.Span.Span, Tag);
