@@ -52,7 +52,23 @@ namespace IniLanguageService
                     if (!section.NameToken.IsMissing &&
                         section.NameToken.Span.Span.Contains(point))
                     {
-                        quickInfoContent.Add($"(section) {sectionName}");
+                        // construct content
+                        string content = $"(section) {sectionName}";
+
+                        var trivia = section.LeadingTrivia.SwitchToIfEmpty(section.TrailingTrivia);
+                        if (section.LeadingTrivia.Any())
+                        {
+                            content += Environment.NewLine +
+                                String.Join(Environment.NewLine,
+                                    trivia
+                                        .Select(t => t.Value)
+                                        .Select(v => v.Substring(1).Trim()) // TODO: move to value
+                                )
+                            ;
+                        }
+
+                        // add to session
+                        quickInfoContent.Add(content);
                         applicableToSpan = snapshot.CreateTrackingSpan(section.NameToken.Span.Span, SpanTrackingMode.EdgeInclusive);
                         return;
                     }
@@ -64,7 +80,24 @@ namespace IniLanguageService
                     if (property != null)
                     {
                         string propertyName = property.NameToken.Value;
-                        quickInfoContent.Add($"(property) {propertyName} (in {sectionName})");
+
+                        // construct content
+                        string content = $"(property) {propertyName} (in {sectionName})";
+
+                        var trivia = property.LeadingTrivia.SwitchToIfEmpty(property.TrailingTrivia);
+                        if (trivia.Any())
+                        {
+                            content += Environment.NewLine +
+                                String.Join(Environment.NewLine,
+                                    trivia
+                                        .Select(t => t.Value)
+                                        .Select(v => v.Substring(1).Trim()) // TODO: move to value
+                                )
+                            ;
+                        }
+
+                        // add to session
+                        quickInfoContent.Add(content);
                         applicableToSpan = snapshot.CreateTrackingSpan(property.NameToken.Span.Span, SpanTrackingMode.EdgeInclusive);
                         return;
                     }

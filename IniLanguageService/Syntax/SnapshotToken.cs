@@ -15,8 +15,10 @@ namespace IniLanguageService.Syntax
 
         public ClassificationSpan Span { get; private set; }
 
-        public string Value { get { return this.Span.Span.GetText(); } }
-        
+        public virtual string Value { get { return this.Span.Span.GetText(); } }
+
+        public string ValueText { get { return this.Span.Span.GetText(); } }
+
         public bool IsMissing
         {
             get { return this.Span.Span.IsEmpty; }
