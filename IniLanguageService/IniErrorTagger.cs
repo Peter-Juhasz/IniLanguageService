@@ -96,19 +96,40 @@ namespace IniLanguageService
                     string sectionName = property.Section.NameToken.Value;
                     string name = property.NameToken.Value;
 
-                    var other = property.Section.Document.Sections
+                    var propertiesWithSameName = property.Section.Document.Sections
                         .Where(s => s.NameToken.Value.Equals(sectionName, StringComparison.InvariantCultureIgnoreCase))
                         .SelectMany(s => s.Properties)
-                        .FirstOrDefault(
+                        .Where(
                             p => p.NameToken.Value.Equals(name, StringComparison.InvariantCultureIgnoreCase)
-                        );
+                        )
+                        .ToList();
 
-                    if (other != null && other != property)
+                    // check for redundant declarations (name and value matches)
+                    string value = property.ValueToken.Value;
+
+                    var other = propertiesWithSameName
+                        .FirstOrDefault(p => p.ValueToken.Value == value);
+
+                    if (other != property)
                     {
                         yield return new TagSpan<IErrorTag>(
-                            property.NameToken.Span.Span,
-                            new ErrorTag(PredefinedErrorTypeNames.Warning, $"Multiple declarations of property '{name}'")
+                            property.Span,
+                            new ErrorTag(PredefinedErrorTypeNames.Warning, $"Redundant declaration of property '{name}'")
                         );
+                    }
+
+                    // report only name equality
+                    else
+                    {
+                        other = propertiesWithSameName.FirstOrDefault();
+
+                        if (other != property)
+                        {
+                            yield return new TagSpan<IErrorTag>(
+                                property.NameToken.Span.Span,
+                                new ErrorTag(PredefinedErrorTypeNames.Warning, $"Multiple declarations of property '{name}'")
+                            );
+                        }
                     }
                 }
             }
