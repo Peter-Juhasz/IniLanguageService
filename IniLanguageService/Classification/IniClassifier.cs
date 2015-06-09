@@ -210,11 +210,12 @@ namespace IniLanguageService
         {
             IniDocumentSyntax syntax = span.Snapshot.TextBuffer.Properties.GetOrCreateSingletonProperty<IniDocumentSyntax>("Syntax", () => Parse(span.Snapshot));
 
-            return syntax.GetTokens()
-                .Where(t => !t.IsMissing)
-                .Select(t => t.Span)
-                .Where(s => s.Span.IntersectsWith(span))
-                .ToList();
+            return (
+                from token in syntax.GetTokens()
+                where !token.IsMissing
+                where token.Span.Span.IntersectsWith(span)
+                select token.Span
+            ).ToList();
         }
     }
 
