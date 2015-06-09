@@ -62,8 +62,13 @@ namespace IniLanguageService
                 
                 yield return new SuggestedActionSet(
                     (
+                        // code fixes
                         from tagSpan in _aggregator.GetTags(range)
                         from action in GetCodeFixesForDiagnostic(tagSpan)
+                        select action
+                    ).Union(
+                        // code refactorings
+                        from action in GetCodeRefactorings(range)
                         select action
                     ).ToArray()
                 );
@@ -78,6 +83,9 @@ namespace IniLanguageService
                         .Select(s => s.Tag)
                         .OfType<DiagnosticErrorTag>()
                         .Any(t => IsFixable(t.Id))
+                    ||
+                    GetCodeRefactorings(range)
+                        .Any()
                 );
             }
 
@@ -104,6 +112,40 @@ namespace IniLanguageService
                     case "RedundantPropertyDeclaration":
                         yield return new RemoveRedundantPropertyDeclaration(snapshotSpan);
                         break;
+                }
+            }
+
+            private IEnumerable<ISuggestedAction> GetCodeRefactorings(SnapshotSpan span)
+            {
+                ITextBuffer buffer = span.Snapshot.TextBuffer;
+                IniDocumentSyntax syntax = buffer.Properties.GetProperty<IniDocumentSyntax>("Syntax");
+
+                var sectionsInRange =
+                    from section in syntax.Sections
+                    where section.Span.IntersectsWith(span)
+                    select section
+                ;
+
+                // sections
+                foreach (IniSectionSyntax section in 
+                    from s in sectionsInRange
+                    where !s.NameToken.IsMissing
+                    select s
+                )
+                {
+
+                }
+
+                // find property
+                foreach (IniPropertySyntax property in 
+                    from section in sectionsInRange
+                    from p in section.Properties
+                    where p.Span.IntersectsWith(span)
+                    select p
+                )
+                {
+                    if (!property.DelimiterToken.IsMissing && property.ValueToken.IsMissing)
+                        yield return new RemoveEmptyPropertyDeclaration(span);
                 }
             }
 
