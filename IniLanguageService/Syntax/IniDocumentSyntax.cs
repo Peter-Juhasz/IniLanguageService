@@ -21,7 +21,13 @@ namespace IniLanguageService.Syntax
         {
             get
             {
-                throw new NotImplementedException();
+                if (!this.Sections.Any())
+                    return new SnapshotSpan(this.Snapshot, 0, 0);
+
+                return new SnapshotSpan(
+                    this.Sections.First().Span.Start,
+                    this.Sections.Last().Span.End
+                );
             }
         }
 

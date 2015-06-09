@@ -22,12 +22,12 @@ namespace IniLanguageService
 
         private sealed class IniQuickInfoSource : IQuickInfoSource
         {
-            public IniQuickInfoSource(ITextBuffer textBuffer)
+            public IniQuickInfoSource(ITextBuffer buffer)
             {
-                _buffer = textBuffer;
+                _buffer = buffer;
             }
 
-            private ITextBuffer _buffer;
+            private readonly ITextBuffer _buffer;
 
 
             public void AugmentQuickInfoSession(IQuickInfoSession session, IList<object> quickInfoContent, out ITrackingSpan applicableToSpan)

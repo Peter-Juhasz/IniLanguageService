@@ -16,7 +16,7 @@ namespace IniLanguageService
     [Export(typeof(ISuggestedActionsSourceProvider))]
     [Name("Ini Suggested Actions")]
     [ContentType(ContentTypes.Ini)]
-    public class IniSuggestedActionsProvider : ISuggestedActionsSourceProvider
+    internal class IniSuggestedActionsProvider : ISuggestedActionsSourceProvider
     {
         public ISuggestedActionsSource CreateSuggestedActionsSource(ITextView textView, ITextBuffer textBuffer)
         {

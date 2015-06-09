@@ -13,7 +13,7 @@ namespace IniLanguageService
     [Export(typeof(ITaggerProvider))]
     [TagType(typeof(IErrorTag))]
     [ContentType(ContentTypes.Ini)]
-    public class IniErrorTaggerProvider : ITaggerProvider
+    internal class IniErrorTaggerProvider : ITaggerProvider
     {
         public ITagger<T> CreateTagger<T>(ITextBuffer buffer) where T : ITag
         {
@@ -71,7 +71,7 @@ namespace IniLanguageService
                         s => s.NameToken.Value.Equals(name, StringComparison.InvariantCultureIgnoreCase)
                     );
 
-                if (other != null && other != section)
+                if (other != section)
                 {
                     yield return new TagSpan<IErrorTag>(
                         section.NameToken.Span.Span,
@@ -96,13 +96,13 @@ namespace IniLanguageService
                     string sectionName = property.Section.NameToken.Value;
                     string name = property.NameToken.Value;
 
-                    var propertiesWithSameName = property.Section.Document.Sections
-                        .Where(s => s.NameToken.Value.Equals(sectionName, StringComparison.InvariantCultureIgnoreCase))
-                        .SelectMany(s => s.Properties)
-                        .Where(
-                            p => p.NameToken.Value.Equals(name, StringComparison.InvariantCultureIgnoreCase)
-                        )
-                        .ToList();
+                    var propertiesWithSameName = (
+                        from s in property.Section.Document.Sections
+                        where s.NameToken.Value.Equals(sectionName, StringComparison.InvariantCultureIgnoreCase)
+                        from p in s.Properties
+                        where p.NameToken.Value.Equals(name, StringComparison.InvariantCultureIgnoreCase)
+                        select p
+                    ).ToList();
 
                     // check for redundant declarations (name and value matches)
                     string value = property.ValueToken.Value;

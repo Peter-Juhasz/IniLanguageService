@@ -20,7 +20,7 @@ namespace IniLanguageService.Syntax
         public SnapshotToken ValueToken { get; set; }
 
 
-        public List<SnapshotToken> LeadingTrivia { get; set; }
+        public IList<SnapshotToken> LeadingTrivia { get; set; }
 
         public SnapshotToken TrailingTrivia { get; set; }
 

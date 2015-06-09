@@ -13,12 +13,13 @@ namespace IniLanguageService
     [Export(typeof(IViewTaggerProvider))]
     [TagType(typeof(ITextMarkerTag))]
     [ContentType(ContentTypes.Ini)]
-    public class IniBracketMatchingTaggerProvider : IViewTaggerProvider
+    internal class IniBracketMatchingTaggerProvider : IViewTaggerProvider
     {
         public ITagger<T> CreateTagger<T>(ITextView textView, ITextBuffer buffer) where T : ITag
         {
             return new IniBracketMatchingTagger(textView) as ITagger<T>;
         }
+
 
         private sealed class IniBracketMatchingTagger : ITagger<ITextMarkerTag>
         {
@@ -58,19 +59,17 @@ namespace IniLanguageService
 
                 SnapshotPoint caret = _view.Caret.Position.BufferPosition;
 
-                IniSectionSyntax section = syntax.Sections.FirstOrDefault(
-                    s => s.Span.Contains(caret)
-                );
+                IniSectionSyntax section = syntax.Sections
+                    .Where(
+                        s => !s.OpeningBracketToken.IsMissing
+                          && !s.ClosingBracketToken.IsMissing
+                    )
+                    .FirstOrDefault(
+                        s => s.OpeningBracketToken.Span.Span.Start == caret
+                          && s.ClosingBracketToken.Span.Span.End == caret
+                    );
 
                 if (section == null)
-                    yield break;
-
-                if (section.OpeningBracketToken.IsMissing ||
-                    section.ClosingBracketToken.IsMissing)
-                    yield break;
-
-                if (section.OpeningBracketToken.Span.Span.Start == caret ||
-                    section.ClosingBracketToken.Span.Span.End == caret)
                 {
                     yield return new TagSpan<ITextMarkerTag>(section.OpeningBracketToken.Span.Span, Tag);
                     yield return new TagSpan<ITextMarkerTag>(section.ClosingBracketToken.Span.Span, Tag);

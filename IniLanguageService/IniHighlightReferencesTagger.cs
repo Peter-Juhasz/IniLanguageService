@@ -13,12 +13,13 @@ namespace IniLanguageService
     [Export(typeof(IViewTaggerProvider))]
     [TagType(typeof(ITextMarkerTag))]
     [ContentType(ContentTypes.Ini)]
-    public class IniHighlightReferencesTaggerProvider : IViewTaggerProvider
+    internal class IniHighlightReferencesTaggerProvider : IViewTaggerProvider
     {
         public ITagger<T> CreateTagger<T>(ITextView textView, ITextBuffer buffer) where T : ITag
         {
             return new IniHighlightReferencesTagger(textView) as ITagger<T>;
         }
+
 
         private sealed class IniHighlightReferencesTagger : ITagger<ITextMarkerTag>
         {
@@ -60,7 +61,7 @@ namespace IniLanguageService
 
                     // duplicate sections
                     if (!section.NameToken.IsMissing &&
-                        section.NameToken.Span.Span.Contains(caret))
+                         section.NameToken.Span.Span.Contains(caret))
                     {
                         var others = section.Document.Sections
                             .Where(
@@ -85,11 +86,13 @@ namespace IniLanguageService
                     {
                         string propertyName = property.NameToken.Value;
 
-                        var others = section.Document.Sections
-                            .Where(s => s.NameToken.Value.Equals(sectionName, StringComparison.InvariantCultureIgnoreCase))
-                            .SelectMany(s => s.Properties)
-                            .Where(p => p.NameToken.Value.Equals(propertyName, StringComparison.InvariantCultureIgnoreCase))
-                            .ToList();
+                        var others = (
+                            from s in section.Document.Sections
+                            where s.NameToken.Value.Equals(sectionName, StringComparison.InvariantCultureIgnoreCase)
+                            from p in s.Properties
+                            where p.NameToken.Value.Equals(propertyName, StringComparison.InvariantCultureIgnoreCase)
+                            select p
+                        ).ToList();
 
                         if (others.Count > 1)
                         {

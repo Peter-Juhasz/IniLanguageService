@@ -39,7 +39,7 @@ namespace IniLanguageService
             
             buffer.ChangedHighPriority += OnBufferChanged;
 
-            IniDocumentSyntax syntax = Reparse(buffer.CurrentSnapshot);
+            IniDocumentSyntax syntax = Parse(buffer.CurrentSnapshot);
             buffer.Properties.AddProperty("Syntax", syntax);
         }
 
@@ -48,11 +48,11 @@ namespace IniLanguageService
             ITextBuffer buffer = sender as ITextBuffer;
             
             // reparse
-            IniDocumentSyntax syntax = buffer.Properties.GetOrCreateSingletonProperty<IniDocumentSyntax>("Syntax", () => Reparse(buffer.CurrentSnapshot));
+            IniDocumentSyntax syntax = buffer.Properties.GetOrCreateSingletonProperty<IniDocumentSyntax>("Syntax", () => Parse(buffer.CurrentSnapshot));
             if (syntax.Snapshot != buffer.CurrentSnapshot)
             {
                 buffer.Properties.RemoveProperty("Syntax");
-                syntax = Reparse(buffer.CurrentSnapshot);
+                syntax = Parse(buffer.CurrentSnapshot);
                 buffer.Properties.AddProperty("Syntax", syntax);
             }
 
@@ -85,7 +85,7 @@ namespace IniLanguageService
             }
         }
 
-        private IniDocumentSyntax Reparse(ITextSnapshot snapshot)
+        protected IniDocumentSyntax Parse(ITextSnapshot snapshot)
         {
             IniDocumentSyntax root = new IniDocumentSyntax() { Snapshot = snapshot };
 
@@ -161,7 +161,7 @@ namespace IniLanguageService
 
                 // error
                 else
-                    ;
+                    ; // TODO: report error
             }
 
             root.Sections.Add(section);
@@ -195,7 +195,7 @@ namespace IniLanguageService
         /// <returns>A list of ClassificationSpans that represent spans identified to be of this classification.</returns>
         public IList<ClassificationSpan> GetClassificationSpans(SnapshotSpan span)
         {
-            IniDocumentSyntax syntax = span.Snapshot.TextBuffer.Properties.GetOrCreateSingletonProperty<IniDocumentSyntax>("Syntax", () => Reparse(span.Snapshot));
+            IniDocumentSyntax syntax = span.Snapshot.TextBuffer.Properties.GetOrCreateSingletonProperty<IniDocumentSyntax>("Syntax", () => Parse(span.Snapshot));
 
             return syntax.GetTokens()
                 .Where(t => !t.IsMissing)
@@ -206,7 +206,7 @@ namespace IniLanguageService
     }
 
 
-    public static class Scanner
+    internal static class IniScanner
     {
         public static SnapshotSpan ReadDelimiter(this ITextSnapshot snapshot, ref SnapshotPoint point)
         {
@@ -214,7 +214,7 @@ namespace IniLanguageService
 
             if (point.Position == snapshot.Length || (@char != '[' && @char != ']' && @char != '='))
                 return new SnapshotSpan(point, 0);
-            
+
             point = point + 1;
             return new SnapshotSpan(point - 1, 1);
         }
@@ -239,15 +239,20 @@ namespace IniLanguageService
             return snapshot.ReadToLineEndWhile(ref point, _ => true);
         }
 
+        public static SnapshotSpan ReadToCommentOrLineEndWhile(this ITextSnapshot snapshot, ref SnapshotPoint point, Predicate<char> predicate)
+        {
+            return snapshot.ReadToLineEndWhile(ref point, c => c != ';' && predicate(c));
+        }
+
+    }
+
+    internal static class CommonScanner
+    {
         public static SnapshotSpan ReadWhiteSpace(this ITextSnapshot snapshot, ref SnapshotPoint point)
         {
             return snapshot.ReadToLineEndWhile(ref point, Char.IsWhiteSpace, rewindWhiteSpace: false);
         }
 
-        public static SnapshotSpan ReadToCommentOrLineEndWhile(this ITextSnapshot snapshot, ref SnapshotPoint point, Predicate<char> predicate)
-        {
-            return snapshot.ReadToLineEndWhile(ref point, c => c != ';' && predicate(c));
-        }
         public static SnapshotSpan ReadToLineEndWhile(this ITextSnapshot snapshot, ref SnapshotPoint point, Predicate<char> predicate, bool rewindWhiteSpace = true)
         {
             SnapshotPoint start = point;
