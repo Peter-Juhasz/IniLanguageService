@@ -5,8 +5,10 @@ Features:
  - Syntax highlighting and validation
  - Bracket matching
  - Outlining
+ - Reference highlighting (duplicates)
  - Automatic formatting (partial while typing)
  - Diagnostics, code fixes and code refactorings
+ - Quick info
 
 Diagnostics:
  - Multiple declarations of a section
