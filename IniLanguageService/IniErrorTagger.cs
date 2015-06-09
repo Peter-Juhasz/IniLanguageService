@@ -20,6 +20,7 @@ namespace IniLanguageService
             return new IniErrorTagger() as ITagger<T>;
         }
 
+
         private sealed class IniErrorTagger : ITagger<IErrorTag>
         {
             public IEnumerable<ITagSpan<IErrorTag>> GetTags(NormalizedSnapshotSpanCollection spans)
@@ -54,7 +55,7 @@ namespace IniLanguageService
                 {
                     yield return new TagSpan<IErrorTag>(
                         section.ClosingBracketToken.Span.Span,
-                        new ErrorTag(PredefinedErrorTypeNames.SyntaxError, "']' expected")
+                        new DiagnosticErrorTag(PredefinedErrorTypeNames.SyntaxError, "SectionNameClosingBracketMissing", "']' expected")
                     );
                 }
 
@@ -75,7 +76,7 @@ namespace IniLanguageService
                 {
                     yield return new TagSpan<IErrorTag>(
                         section.NameToken.Span.Span,
-                        new ErrorTag(PredefinedErrorTypeNames.Warning, $"Multiple declarations of section '{name}'")
+                        new DiagnosticErrorTag(PredefinedErrorTypeNames.Warning, "MultipleDeclarationsOfSection", $"Multiple declarations of section '{name}'")
                     );
                 }
             }
@@ -87,7 +88,7 @@ namespace IniLanguageService
                 {
                     yield return new TagSpan<IErrorTag>(
                         property.DelimiterToken.Span.Span,
-                        new ErrorTag(PredefinedErrorTypeNames.SyntaxError, "'=' expected")
+                        new DiagnosticErrorTag(PredefinedErrorTypeNames.SyntaxError, "PropertyNameValueDelimiterExpected", "'=' expected")
                     );
                 }
                 else
@@ -114,7 +115,7 @@ namespace IniLanguageService
                     {
                         yield return new TagSpan<IErrorTag>(
                             property.Span,
-                            new ErrorTag(PredefinedErrorTypeNames.Warning, $"Redundant declaration of property '{name}'")
+                            new DiagnosticErrorTag(PredefinedErrorTypeNames.Warning, "RedundantPropertyDeclaration", $"Redundant declaration of property '{name}'")
                         );
                     }
 

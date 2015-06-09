@@ -97,6 +97,7 @@ namespace IniLanguageService
                 SnapshotPoint cursor = line.Start;
                 snapshot.ReadWhiteSpace(ref cursor); // skip white space
 
+                // skip blank lines
                 if (cursor == line.End)
                     continue;
 
@@ -123,6 +124,10 @@ namespace IniLanguageService
                     snapshot.ReadWhiteSpace(ref cursor);
                     SnapshotToken commentToken = new SnapshotToken(snapshot.ReadComment(ref cursor), _commentType);
 
+                    IList<SnapshotToken> trailingTrivia = new List<SnapshotToken>();
+                    if (!commentToken.IsMissing)
+                        trailingTrivia.Add(commentToken);
+
                     section = new IniSectionSyntax()
                     {
                         Document = root,
@@ -130,7 +135,7 @@ namespace IniLanguageService
                         OpeningBracketToken = openingBracket,
                         NameToken = name,
                         ClosingBracketToken = closingBracket,
-                        TrailingTrivia = new List<SnapshotToken>() { commentToken },
+                        TrailingTrivia = trailingTrivia,
                     };
                     leadingTrivia = new List<SnapshotToken>();
                 }
@@ -146,6 +151,10 @@ namespace IniLanguageService
                     snapshot.ReadWhiteSpace(ref cursor);
                     SnapshotToken commentToken = new SnapshotToken(snapshot.ReadComment(ref cursor), _commentType);
 
+                    IList<SnapshotToken> trailingTrivia = new List<SnapshotToken>();
+                    if (!commentToken.IsMissing)
+                        trailingTrivia.Add(commentToken);
+
                     IniPropertySyntax property = new IniPropertySyntax()
                     {
                         Section = section,
@@ -153,7 +162,7 @@ namespace IniLanguageService
                         NameToken = name,
                         DelimiterToken = delimiter,
                         ValueToken = value,
-                        TrailingTrivia = new List<SnapshotToken>() { commentToken },
+                        TrailingTrivia = trailingTrivia,
                     };
                     section.Properties.Add(property);
                     leadingTrivia = new List<SnapshotToken>();

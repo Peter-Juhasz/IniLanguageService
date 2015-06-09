@@ -41,7 +41,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="CodeFixes\RemoveRedundantPropertyDeclaration.cs" />
+    <Compile Include="CodeFixes\MergeDeclarationsIntoFirstSection.cs" />
     <Compile Include="ContentTypes.cs" />
+    <Compile Include="DiagnosticErrorTag.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="IniHighlightReferencesTagger.cs" />
     <Compile Include="IniQuickInfoProvider.cs" />
