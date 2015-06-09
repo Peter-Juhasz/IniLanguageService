@@ -46,7 +46,7 @@ namespace IniLanguageService
 
                 if (section != null)
                 {
-                    string sectionName = section.NameToken.Span.Span.GetText();
+                    string sectionName = section.NameToken.Value;
 
                     // provide info about section
                     if (!section.NameToken.IsMissing &&
@@ -59,13 +59,13 @@ namespace IniLanguageService
 
                     // provide info about property
                     IniPropertySyntax property = section.Properties
-                        .FirstOrDefault(p => p.PropertyNameToken.Span.Span.Contains(point));
+                        .FirstOrDefault(p => p.NameToken.Span.Span.Contains(point));
 
                     if (property != null)
                     {
-                        string propertyName = property.PropertyNameToken.Span.Span.GetText();
+                        string propertyName = property.NameToken.Value;
                         quickInfoContent.Add($"(property) {propertyName} (in {sectionName})");
-                        applicableToSpan = snapshot.CreateTrackingSpan(property.PropertyNameToken.Span.Span, SpanTrackingMode.EdgeInclusive);
+                        applicableToSpan = snapshot.CreateTrackingSpan(property.NameToken.Span.Span, SpanTrackingMode.EdgeInclusive);
                         return;
                     }
                 }

@@ -64,11 +64,11 @@ namespace IniLanguageService
                 
 
                 // check for duplicate sections
-                string name = section.NameToken.Span.Span.GetText();
+                string name = section.NameToken.Value;
 
                 var other = section.Document.Sections
                     .FirstOrDefault(
-                        s => s.NameToken.Span.Span.GetText().Equals(name, StringComparison.InvariantCultureIgnoreCase)
+                        s => s.NameToken.Value.Equals(name, StringComparison.InvariantCultureIgnoreCase)
                     );
 
                 if (other != null && other != section)
@@ -93,20 +93,20 @@ namespace IniLanguageService
                 else
                 {
                     // check for duplicate properties
-                    string sectionName = property.Section.NameToken.Span.Span.GetText();
-                    string name = property.PropertyNameToken.Span.Span.GetText();
+                    string sectionName = property.Section.NameToken.Value;
+                    string name = property.NameToken.Value;
 
                     var other = property.Section.Document.Sections
-                        .Where(s => s.NameToken.Span.Span.GetText().Equals(sectionName, StringComparison.InvariantCultureIgnoreCase))
+                        .Where(s => s.NameToken.Value.Equals(sectionName, StringComparison.InvariantCultureIgnoreCase))
                         .SelectMany(s => s.Properties)
                         .FirstOrDefault(
-                            p => p.PropertyNameToken.Span.Span.GetText().Equals(name, StringComparison.InvariantCultureIgnoreCase)
+                            p => p.NameToken.Value.Equals(name, StringComparison.InvariantCultureIgnoreCase)
                         );
 
                     if (other != null && other != property)
                     {
                         yield return new TagSpan<IErrorTag>(
-                            property.PropertyNameToken.Span.Span,
+                            property.NameToken.Span.Span,
                             new ErrorTag(PredefinedErrorTypeNames.Warning, $"Multiple declarations of property '{name}'")
                         );
                     }

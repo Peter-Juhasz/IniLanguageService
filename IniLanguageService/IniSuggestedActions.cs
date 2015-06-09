@@ -45,9 +45,9 @@ namespace IniLanguageService
                         from section in syntax.Sections
                         where !section.NameToken.IsMissing
                         where section.NameToken.Span.Span.IntersectsWith(range)
-                        let name = section.NameToken.Span.Span.GetText()
+                        let name = section.NameToken.Value
                         let firstSection = syntax.Sections.First(
-                            s => s.NameToken.Span.Span.GetText().Equals(name, StringComparison.InvariantCultureIgnoreCase)
+                            s => s.NameToken.Value.Equals(name, StringComparison.InvariantCultureIgnoreCase)
                         )
                         where section != firstSection
                         select new MovePropertiesToFirstSection(firstSection, section)
@@ -65,9 +65,9 @@ namespace IniLanguageService
                         from section in syntax.Sections
                         where !section.NameToken.IsMissing
                         where section.NameToken.Span.Span.IntersectsWith(range)
-                        let name = section.NameToken.Span.Span.GetText()
+                        let name = section.NameToken.Value
                         let firstSection = syntax.Sections.First(
-                            s => s.NameToken.Span.Span.GetText().Equals(name, StringComparison.InvariantCultureIgnoreCase)
+                            s => s.NameToken.Value.Equals(name, StringComparison.InvariantCultureIgnoreCase)
                         )
                         where section != firstSection
                         select section

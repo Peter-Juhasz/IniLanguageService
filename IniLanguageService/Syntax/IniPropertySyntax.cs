@@ -13,11 +13,11 @@ namespace IniLanguageService.Syntax
         public IniSectionSyntax Section { get; set; }
 
 
-        public SnapshotToken PropertyNameToken { get; set; }
+        public SnapshotToken NameToken { get; set; }
 
         public SnapshotToken DelimiterToken { get; set; }
 
-        public SnapshotToken PropertyValueToken { get; set; }
+        public SnapshotToken ValueToken { get; set; }
 
 
         public List<SnapshotToken> LeadingTrivia { get; set; }
@@ -29,7 +29,7 @@ namespace IniLanguageService.Syntax
         {
             get
             {
-                return new SnapshotSpan(this.PropertyNameToken.Span.Span.Start, this.PropertyValueToken.Span.Span.End);
+                return new SnapshotSpan(this.NameToken.Span.Span.Start, this.ValueToken.Span.Span.End);
             }
         }
 
@@ -39,9 +39,9 @@ namespace IniLanguageService.Syntax
             foreach (SnapshotToken token in this.LeadingTrivia)
                 yield return token;
 
-            yield return this.PropertyNameToken;
+            yield return this.NameToken;
             yield return this.DelimiterToken;
-            yield return this.PropertyValueToken;
+            yield return this.ValueToken;
 
             if (this.TrailingTrivia != null)
                 yield return this.TrailingTrivia;

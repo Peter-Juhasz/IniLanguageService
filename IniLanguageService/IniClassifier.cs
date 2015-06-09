@@ -150,9 +150,9 @@ namespace IniLanguageService
                     {
                         Section = section,
                         LeadingTrivia = leadingTrivia,
-                        PropertyNameToken = name,
+                        NameToken = name,
                         DelimiterToken = delimiter,
-                        PropertyValueToken = value,
+                        ValueToken = value,
                         TrailingTrivia = commentToken,
                     };
                     section.Properties.Add(property);
