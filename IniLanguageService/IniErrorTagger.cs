@@ -92,16 +92,6 @@ namespace IniLanguageService
                 }
                 else
                 {
-                    // value is missing
-                    if (property.PropertyValueToken.IsMissing)
-                    {
-                        yield return new TagSpan<IErrorTag>(
-                            property.PropertyValueToken.Span.Span,
-                            new ErrorTag(PredefinedErrorTypeNames.SyntaxError, "Property value expected")
-                        );
-                    }
-
-
                     // check for duplicate properties
                     string sectionName = property.Section.NameToken.Span.Span.GetText();
                     string name = property.PropertyNameToken.Span.Span.GetText();
