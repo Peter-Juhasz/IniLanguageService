@@ -10,6 +10,7 @@ namespace IniLanguageService.Syntax
         {
             this.Properties = new List<IniPropertySyntax>();
             this.LeadingTrivia = new List<SnapshotToken>();
+            this.TrailingTrivia = new List<SnapshotToken>();
         }
 
         public IniDocumentSyntax Document { get; set; }
@@ -26,7 +27,7 @@ namespace IniLanguageService.Syntax
 
         public IList<SnapshotToken> LeadingTrivia { get; set; }
 
-        public SnapshotToken TrailingTrivia { get; set; }
+        public IList<SnapshotToken> TrailingTrivia { get; set; }
 
 
         public override SnapshotSpan Span
@@ -35,7 +36,7 @@ namespace IniLanguageService.Syntax
             {
                 return this.Properties.Count == 0
                     ? new SnapshotSpan(this.OpeningBracketToken.Span.Span.Start, this.ClosingBracketToken.Span.Span.End)
-                    : new SnapshotSpan(this.OpeningBracketToken.Span.Span.Start, this.Properties.Last().TrailingTrivia.Span.Span.End)
+                    : new SnapshotSpan(this.OpeningBracketToken.Span.Span.Start, this.Properties.Last().ValueToken.Span.Span.End)
                 ;
             }
         }
@@ -49,8 +50,8 @@ namespace IniLanguageService.Syntax
             yield return this.NameToken;
             yield return this.ClosingBracketToken;
 
-            if (this.TrailingTrivia != null)
-                yield return this.TrailingTrivia;
+            foreach (SnapshotToken token in this.TrailingTrivia)
+                yield return token;
 
             foreach (SnapshotToken token in this.Properties.SelectMany(p => p.GetTokens()))
                 yield return token;

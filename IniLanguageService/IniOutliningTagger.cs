@@ -34,7 +34,7 @@ namespace IniLanguageService
                     let last = section.Properties.Last()
                     let collapsibleSpan = new SnapshotSpan(
                         section.ClosingBracketToken.Span.Span.End,
-                        (last.TrailingTrivia ?? last.ValueToken).Span.Span.End
+                        (last.TrailingTrivia.LastOrDefault() ?? last.ValueToken).Span.Span.End
                     )
                     select new TagSpan<IOutliningRegionTag>(
                         collapsibleSpan,

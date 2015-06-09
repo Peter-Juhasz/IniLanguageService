@@ -130,7 +130,7 @@ namespace IniLanguageService
                         OpeningBracketToken = openingBracket,
                         NameToken = name,
                         ClosingBracketToken = closingBracket,
-                        TrailingTrivia = commentToken,
+                        TrailingTrivia = new List<SnapshotToken>() { commentToken },
                     };
                     leadingTrivia = new List<SnapshotToken>();
                 }
@@ -153,7 +153,7 @@ namespace IniLanguageService
                         NameToken = name,
                         DelimiterToken = delimiter,
                         ValueToken = value,
-                        TrailingTrivia = commentToken,
+                        TrailingTrivia = new List<SnapshotToken>() { commentToken },
                     };
                     section.Properties.Add(property);
                     leadingTrivia = new List<SnapshotToken>();

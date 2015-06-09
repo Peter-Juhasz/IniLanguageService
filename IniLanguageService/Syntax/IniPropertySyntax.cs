@@ -8,6 +8,7 @@ namespace IniLanguageService.Syntax
         public IniPropertySyntax()
         {
             this.LeadingTrivia = new List<SnapshotToken>();
+            this.TrailingTrivia = new List<SnapshotToken>();
         }
         
         public IniSectionSyntax Section { get; set; }
@@ -22,7 +23,7 @@ namespace IniLanguageService.Syntax
 
         public IList<SnapshotToken> LeadingTrivia { get; set; }
 
-        public SnapshotToken TrailingTrivia { get; set; }
+        public IList<SnapshotToken> TrailingTrivia { get; set; }
 
 
         public override SnapshotSpan Span
@@ -43,8 +44,8 @@ namespace IniLanguageService.Syntax
             yield return this.DelimiterToken;
             yield return this.ValueToken;
 
-            if (this.TrailingTrivia != null)
-                yield return this.TrailingTrivia;
+            foreach (SnapshotToken token in this.TrailingTrivia)
+                yield return token;
         }
     }
 }
