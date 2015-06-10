@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.Text;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 namespace IniLanguageService.Syntax
 {
@@ -53,6 +54,14 @@ namespace IniLanguageService.Syntax
                         ?? this.ClosingBracketToken
                     ).Span.Span.End
                 );
+            }
+        }
+
+        public override SyntaxNode Parent
+        {
+            get
+            {
+                return this.Document;
             }
         }
 

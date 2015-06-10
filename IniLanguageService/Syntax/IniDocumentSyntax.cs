@@ -39,6 +39,14 @@ namespace IniLanguageService.Syntax
             }
         }
 
+        public override SyntaxNode Parent
+        {
+            get
+            {
+                return null;
+            }
+        }
+
 
         public override IEnumerable<SnapshotToken> GetTokens()
         {

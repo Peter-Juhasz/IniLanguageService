@@ -9,6 +9,8 @@ namespace IniLanguageService.Syntax
 
         public abstract SnapshotSpan FullSpan { get; }
 
+        public abstract SyntaxNode Parent { get; }
+
         public abstract IEnumerable<SnapshotToken> GetTokens();
     }
 }
