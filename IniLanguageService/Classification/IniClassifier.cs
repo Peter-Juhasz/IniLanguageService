@@ -61,24 +61,67 @@ namespace IniLanguageService
             {
                 ITextChange change = e.Changes.Single();
 
-                // format on ']'
-                if (change.OldLength == 0 && change.NewText == "]")
+                if (change.OldLength == 0 && change.NewLength == 1)
                 {
-                    IniSectionSyntax section = syntax.Sections
-                        .FirstOrDefault(s => s.ClosingBracketToken.Span.Span == change.NewSpan);
-
-                    if (section != null)
+                    // format on ']'
+                    if (change.NewText == "]")
                     {
-                        // remove unnecessary whitespace
-                        using (ITextEdit format = buffer.CreateEdit())
-                        {
-                            if (section.OpeningBracketToken.Span.Span.End != section.NameToken.Span.Span.Start)
-                                format.Delete(new SnapshotSpan(section.OpeningBracketToken.Span.Span.End, section.NameToken.Span.Span.Start));
-                            
-                            if (section.NameToken.Span.Span.End != section.ClosingBracketToken.Span.Span.Start)
-                                format.Delete(new SnapshotSpan(section.NameToken.Span.Span.End, section.ClosingBracketToken.Span.Span.Start));
+                        IniSectionSyntax section = syntax.Sections
+                            .FirstOrDefault(s => s.ClosingBracketToken.Span.Span == change.NewSpan);
 
-                            format.Apply();
+                        if (section != null)
+                        {
+                            // remove unnecessary whitespace
+                            using (ITextEdit format = buffer.CreateEdit())
+                            {
+                                if (section.OpeningBracketToken.Span.Span.End != section.NameToken.Span.Span.Start)
+                                    format.Delete(new SnapshotSpan(section.OpeningBracketToken.Span.Span.End, section.NameToken.Span.Span.Start));
+
+                                if (section.NameToken.Span.Span.End != section.ClosingBracketToken.Span.Span.Start)
+                                    format.Delete(new SnapshotSpan(section.NameToken.Span.Span.End, section.ClosingBracketToken.Span.Span.Start));
+
+                                format.Apply();
+                            }
+                        }
+                    }
+
+                    // format on '='
+                    else if (change.NewText == "=")
+                    {
+                        IniPropertySyntax property = syntax.Sections
+                            .SelectMany(s => s.Properties)
+                            .FirstOrDefault(p => p.DelimiterToken.Span.Span == change.NewSpan);
+
+                        if (property != null)
+                        {
+                            // reference point is section opening '['
+                            SnapshotPoint referencePoint = property.Section.OpeningBracketToken.Span.Span.Start;
+
+                            // find property before
+                            IniPropertySyntax before = property.Section.Properties
+                                .TakeWhile(p => p != property)
+                                .LastOrDefault();
+
+                            // override reference point if found property before
+                            if (before != null)
+                                referencePoint = before.NameToken.Span.Span.Start;
+
+                            // compare
+                            ITextSnapshotLine referenceLine = referencePoint.GetContainingLine();
+                            ITextSnapshotLine line = property.DelimiterToken.Span.Span.End.GetContainingLine();
+
+                            SnapshotSpan referenceIndent = new SnapshotSpan(referenceLine.Start, referencePoint);
+                            SnapshotSpan indent = new SnapshotSpan(line.Start, property.NameToken.Span.Span.Start);
+
+                            if (referenceIndent.GetText() != indent.GetText())
+                            {
+                                using (ITextEdit edit = buffer.CreateEdit())
+                                {
+                                    edit.Replace(indent, referenceIndent.GetText());
+
+                                    edit.Apply();
+                                }
+                            }
                         }
                     }
                 }
