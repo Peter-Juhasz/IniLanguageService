@@ -11,7 +11,6 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Media;
 
 namespace IniLanguageService
 {
@@ -127,11 +126,7 @@ namespace IniLanguageService
                 ;
 
                 // sections
-                foreach (IniSectionSyntax section in 
-                    from s in sectionsInRange
-                    where !s.NameToken.IsMissing
-                    select s
-                )
+                foreach (IniSectionSyntax section in sectionsInRange)
                 {
                     if (!section.NameToken.IsMissing && !section.ClosingBracketToken.IsMissing &&
                         section.Properties.Count == 0)
