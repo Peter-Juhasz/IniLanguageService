@@ -7,6 +7,8 @@ namespace IniLanguageService.Syntax
     {
         public abstract SnapshotSpan Span { get; }
 
+        public abstract SnapshotSpan FullSpan { get; }
+
         public abstract IEnumerable<SnapshotToken> GetTokens();
     }
 }

@@ -31,6 +31,14 @@ namespace IniLanguageService.Syntax
             }
         }
 
+        public override SnapshotSpan FullSpan
+        {
+            get
+            {
+                return new SnapshotSpan(this.Snapshot, 0, this.Snapshot.Length);
+            }
+        }
+
 
         public override IEnumerable<SnapshotToken> GetTokens()
         {

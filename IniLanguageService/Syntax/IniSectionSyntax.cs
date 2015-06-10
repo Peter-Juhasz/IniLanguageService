@@ -41,6 +41,22 @@ namespace IniLanguageService.Syntax
             }
         }
 
+        public override SnapshotSpan FullSpan
+        {
+            get
+            {
+                return new SnapshotSpan(
+                    (this.LeadingTrivia.FirstOrDefault() ?? this.OpeningBracketToken).Span.Span.Start,
+                    (this.TrailingTrivia.LastOrDefault()
+                        ?? this.Properties.LastOrDefault()?.TrailingTrivia.LastOrDefault()
+                        ?? this.Properties.LastOrDefault()?.ValueToken
+                        ?? this.ClosingBracketToken
+                    ).Span.Span.End
+                );
+            }
+        }
+
+
         public override IEnumerable<SnapshotToken> GetTokens()
         {
             foreach (SnapshotToken token in this.LeadingTrivia)

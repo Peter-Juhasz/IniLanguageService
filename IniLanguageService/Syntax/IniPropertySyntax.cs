@@ -1,5 +1,7 @@
 ﻿using Microsoft.VisualStudio.Text;
 using System.Collections.Generic;
+using System;
+using System.Linq;
 
 namespace IniLanguageService.Syntax
 {
@@ -31,6 +33,17 @@ namespace IniLanguageService.Syntax
             get
             {
                 return new SnapshotSpan(this.NameToken.Span.Span.Start, this.ValueToken.Span.Span.End);
+            }
+        }
+
+        public override SnapshotSpan FullSpan
+        {
+            get
+            {
+                return new SnapshotSpan(
+                    (this.LeadingTrivia.FirstOrDefault() ?? this.NameToken).Span.Span.Start,
+                    (this.TrailingTrivia.LastOrDefault() ?? this.ValueToken).Span.Span.End
+                );
             }
         }
 
