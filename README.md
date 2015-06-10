@@ -5,8 +5,10 @@ Features:
  - Syntax highlighting and validation
  - Bracket matching
  - Outlining
- - Reference highlighting (duplicates)
- - Automatic formatting (partial while typing)
+ - Highlight references (duplicates)
+ - Automatic formatting (while typing)
+    - Section names (on ']')
+    - Indentation of properties (on '=')
  - Diagnostics, code fixes and code refactorings
  - Quick info
 
@@ -20,3 +22,4 @@ Code Fixes:
 
 Code Refactorings:
  - Remove empty property declaration
+ - Remove empty section
