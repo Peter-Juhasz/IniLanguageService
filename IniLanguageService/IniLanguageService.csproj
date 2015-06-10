@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="CodeFixes\RemoveRedundantPropertyDeclaration.cs" />
     <Compile Include="CodeFixes\MergeDeclarationsIntoFirstSection.cs" />
+    <Compile Include="CodeRefactorings\RemoveEmptySection.cs" />
     <Compile Include="CodeRefactorings\RemoveEmptyPropertyDeclaration.cs" />
     <Compile Include="ContentTypes.cs" />
     <Compile Include="Diagnostics\DiagnosticErrorTag.cs" />

@@ -133,7 +133,9 @@ namespace IniLanguageService
                     select s
                 )
                 {
-
+                    if (!section.NameToken.IsMissing && !section.ClosingBracketToken.IsMissing &&
+                        section.Properties.Count == 0)
+                        yield return new RemoveEmptySection(span);
                 }
 
                 // find property
