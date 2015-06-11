@@ -41,6 +41,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="CodeFixes\ICodeFixProvider.cs" />
     <Compile Include="CodeFixes\RemoveRedundantPropertyDeclaration.cs" />
     <Compile Include="CodeFixes\MergeDeclarationsIntoFirstSection.cs" />
     <Compile Include="CodeRefactorings\CodeAction.cs" />
