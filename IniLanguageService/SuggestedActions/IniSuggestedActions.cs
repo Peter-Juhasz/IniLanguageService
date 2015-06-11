@@ -1,4 +1,5 @@
 ﻿using IniLanguageService.CodeFixes;
+using IniLanguageService.CodeRefactorings;
 using IniLanguageService.Syntax;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
@@ -24,34 +25,47 @@ namespace IniLanguageService
         [Import]
         private IBufferTagAggregatorFactoryService aggregatorFactoryService;
 
+        [ImportMany]
+        private IEnumerable<ICodeRefactoringProvider> refactoringProviders;
+
 #pragma warning restore 649
 
 
         public ISuggestedActionsSource CreateSuggestedActionsSource(ITextView textView, ITextBuffer textBuffer)
         {
-            return new IniSuggestedActions(textView, textBuffer, aggregatorFactoryService.CreateTagAggregator<IErrorTag>(textBuffer));
+            return new IniSuggestedActions(
+                textView, textBuffer,
+                aggregatorFactoryService.CreateTagAggregator<IErrorTag>(textBuffer),
+                refactoringProviders
+            );
         }
 
 
         private sealed class IniSuggestedActions : ISuggestedActionsSource
         {
-            public IniSuggestedActions(ITextView view, ITextBuffer buffer, ITagAggregator<IErrorTag> aggregator)
+            public IniSuggestedActions(
+                ITextView view, ITextBuffer buffer,
+                ITagAggregator<IErrorTag> aggregator,
+                IEnumerable<ICodeRefactoringProvider> refactoringProviders
+            )
             {
                 _view = view;
                 _buffer = buffer;
                 _aggregator = aggregator;
+                _refactoringProviders = refactoringProviders;
             }
 
             private readonly ITextView _view;
             private readonly ITextBuffer _buffer;
             private readonly ITagAggregator<IErrorTag> _aggregator;
+            private readonly IEnumerable<ICodeRefactoringProvider> _refactoringProviders;
 
             private static readonly IReadOnlyCollection<string> FixableDiagnosticIds = new []
             {
                 "MultipleDeclarationsOfSection",
                 "RedundantPropertyDeclaration",
             };
-
+            
             public event EventHandler<EventArgs> SuggestedActionsChanged;
 
             public IEnumerable<SuggestedActionSet> GetSuggestedActions(ISuggestedActionCategorySet requestedActionCategories, SnapshotSpan range, CancellationToken cancellationToken)
@@ -67,8 +81,9 @@ namespace IniLanguageService
                         select action
                     ).Union(
                         // code refactorings
-                        from action in GetCodeRefactorings(range)
-                        select action
+                        from refactoring in _refactoringProviders
+                        from action in refactoring.GetRefactorings(range)
+                        select action.ToSuggestedAction()
                     ).ToArray()
                 );
             }
@@ -83,7 +98,8 @@ namespace IniLanguageService
                         .OfType<DiagnosticErrorTag>()
                         .Any(t => IsFixable(t.Id))
                     ||
-                    GetCodeRefactorings(range)
+                    _refactoringProviders
+                        .SelectMany(rp => rp.GetRefactorings(range))
                         .Any()
                 );
             }
@@ -111,38 +127,6 @@ namespace IniLanguageService
                     case "RedundantPropertyDeclaration":
                         yield return new RemoveRedundantPropertyDeclaration(snapshotSpan);
                         break;
-                }
-            }
-
-            private IEnumerable<ISuggestedAction> GetCodeRefactorings(SnapshotSpan span)
-            {
-                ITextBuffer buffer = span.Snapshot.TextBuffer;
-                IniDocumentSyntax syntax = buffer.Properties.GetProperty<IniDocumentSyntax>("Syntax");
-
-                var sectionsInRange =
-                    from section in syntax.Sections
-                    where section.Span.IntersectsWith(span)
-                    select section
-                ;
-
-                // sections
-                foreach (IniSectionSyntax section in sectionsInRange)
-                {
-                    if (!section.NameToken.IsMissing && !section.ClosingBracketToken.IsMissing &&
-                        section.Properties.Count == 0)
-                        yield return new RemoveEmptySection(span);
-                }
-
-                // find property
-                foreach (IniPropertySyntax property in 
-                    from section in sectionsInRange
-                    from p in section.Properties
-                    where p.Span.IntersectsWith(span)
-                    select p
-                )
-                {
-                    if (!property.DelimiterToken.IsMissing && property.ValueToken.IsMissing)
-                        yield return new RemoveEmptyPropertyDeclaration(span);
                 }
             }
 

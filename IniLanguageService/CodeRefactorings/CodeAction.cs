@@ -10,16 +10,16 @@ namespace IniLanguageService.CodeRefactorings
 {
     public class CodeAction
     {
-        public CodeAction(string title, Func<ITextSnapshot, ITextSnapshot> transform)
+        public CodeAction(string title, Func<ITextSnapshot> transform)
         {
             this._title = title;
             this._transform = transform;
         }
-        public CodeAction(string title, Func<ITextSnapshot, ITextEdit> edit)
-            : this(title, s => ApplyEdit(edit(s)))
+        public CodeAction(string title, Func<ITextEdit> edit)
+            : this(title, () => ApplyEdit(edit()))
         { }
 
-        private readonly Func<ITextSnapshot, ITextSnapshot> _transform;
+        private readonly Func<ITextSnapshot> _transform;
         private readonly string _title;
 
 
@@ -31,9 +31,9 @@ namespace IniLanguageService.CodeRefactorings
             }
         }
 
-        public virtual ITextSnapshot Apply(ITextSnapshot snapshot)
+        public virtual ITextSnapshot Apply()
         {
-            return _transform(snapshot);
+            return _transform();
         }
 
 
@@ -46,21 +46,19 @@ namespace IniLanguageService.CodeRefactorings
 
     public static class CodeActionExtensions
     {
-        public static ISuggestedAction ToSuggestedAction(this CodeAction action, ITextSnapshot snapshot)
+        public static ISuggestedAction ToSuggestedAction(this CodeAction action)
         {
-            return new CodeActionSuggestedAction(action, snapshot);
+            return new CodeActionSuggestedAction(action);
         }
 
         private sealed class CodeActionSuggestedAction : ISuggestedAction
         {
-            public CodeActionSuggestedAction(CodeAction action, ITextSnapshot snapshot)
+            public CodeActionSuggestedAction(CodeAction action)
             {
                 this._action = action;
-                this._snapshot = snapshot;
             }
 
             private readonly CodeAction _action;
-            private readonly ITextSnapshot _snapshot;
 
             public IEnumerable<SuggestedActionSet> ActionSets
             {
@@ -109,8 +107,9 @@ namespace IniLanguageService.CodeRefactorings
 
             public void Invoke(CancellationToken cancellationToken)
             {
-                _action.Apply(_snapshot);
+                _action.Apply();
             }
+
 
             public bool TryGetTelemetryId(out Guid telemetryId)
             {
