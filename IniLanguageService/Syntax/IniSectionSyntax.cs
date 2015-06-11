@@ -65,6 +65,11 @@ namespace IniLanguageService.Syntax
             }
         }
 
+        public override IEnumerable<SyntaxNode> Descendants()
+        {
+            return this.Properties;
+        }
+
 
         public override IEnumerable<SnapshotToken> GetTokens()
         {

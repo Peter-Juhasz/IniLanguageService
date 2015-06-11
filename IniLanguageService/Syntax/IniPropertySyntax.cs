@@ -55,6 +55,11 @@ namespace IniLanguageService.Syntax
             }
         }
 
+        public override IEnumerable<SyntaxNode> Descendants()
+        {
+            yield break;
+        }
+
 
         public override IEnumerable<SnapshotToken> GetTokens()
         {

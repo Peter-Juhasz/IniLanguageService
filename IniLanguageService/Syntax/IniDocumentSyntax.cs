@@ -47,6 +47,11 @@ namespace IniLanguageService.Syntax
             }
         }
 
+        public override IEnumerable<SyntaxNode> Descendants()
+        {
+            return this.Sections;
+        }
+
 
         public override IEnumerable<SnapshotToken> GetTokens()
         {
