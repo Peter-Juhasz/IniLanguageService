@@ -26,6 +26,9 @@ namespace IniLanguageService
         private IBufferTagAggregatorFactoryService aggregatorFactoryService;
 
         [ImportMany]
+        private IEnumerable<ICodeFixProvider> codeFixProviders;
+
+        [ImportMany]
         private IEnumerable<ICodeRefactoringProvider> refactoringProviders;
 
 #pragma warning restore 649
@@ -36,6 +39,7 @@ namespace IniLanguageService
             return new IniSuggestedActions(
                 textView, textBuffer,
                 aggregatorFactoryService.CreateTagAggregator<IErrorTag>(textBuffer),
+                codeFixProviders,
                 refactoringProviders
             );
         }
@@ -46,46 +50,58 @@ namespace IniLanguageService
             public IniSuggestedActions(
                 ITextView view, ITextBuffer buffer,
                 ITagAggregator<IErrorTag> aggregator,
+                IEnumerable<ICodeFixProvider> codeFixProviders,
                 IEnumerable<ICodeRefactoringProvider> refactoringProviders
             )
             {
                 _view = view;
                 _buffer = buffer;
                 _aggregator = aggregator;
+                _codeFixProviders = codeFixProviders;
                 _refactoringProviders = refactoringProviders;
             }
 
             private readonly ITextView _view;
             private readonly ITextBuffer _buffer;
             private readonly ITagAggregator<IErrorTag> _aggregator;
+            private readonly IEnumerable<ICodeFixProvider> _codeFixProviders;
             private readonly IEnumerable<ICodeRefactoringProvider> _refactoringProviders;
-
-            private static readonly IReadOnlyCollection<string> FixableDiagnosticIds = new []
-            {
-                "MultipleDeclarationsOfSection",
-                "RedundantPropertyDeclaration",
-            };
-            
+                        
             public event EventHandler<EventArgs> SuggestedActionsChanged;
 
             public IEnumerable<SuggestedActionSet> GetSuggestedActions(ISuggestedActionCategorySet requestedActionCategories, SnapshotSpan range, CancellationToken cancellationToken)
             {
                 ITextBuffer buffer = range.Snapshot.TextBuffer;
                 IniDocumentSyntax syntax = buffer.Properties.GetProperty<IniDocumentSyntax>("Syntax");
-                
-                yield return new SuggestedActionSet(
+
+                return
                     (
                         // code fixes
                         from tagSpan in _aggregator.GetTags(range)
-                        from action in GetCodeFixesForDiagnostic(tagSpan)
-                        select action
+                        where tagSpan.Tag is DiagnosticErrorTag
+                        let diagnostic = tagSpan.Tag as DiagnosticErrorTag
+
+                        from provider in _codeFixProviders
+                        where provider.CanFix(diagnostic.Id)
+                        let span = tagSpan.Span.GetSpans(_buffer).First()
+
+                        from fix in provider.GetFixes(span)
+
+                        group fix by provider into set
+                        where set.Any()
+                        select set as IEnumerable<CodeAction>
                     ).Union(
                         // code refactorings
-                        from refactoring in _refactoringProviders
-                        from action in refactoring.GetRefactorings(range)
-                        select action.ToSuggestedAction()
-                    ).ToArray()
-                );
+                        from provider in _refactoringProviders
+                        from refactoring in provider.GetRefactorings(range)
+
+                        group refactoring by provider into set
+                        where set.Any()
+                        select set as IEnumerable<CodeAction>
+                    )
+                    .Select(s => s.Select(ca => ca.ToSuggestedAction()))
+                    .Select(s => new SuggestedActionSet(s))
+                ;
             }
 
             public Task<bool> HasSuggestedActionsAsync(ISuggestedActionCategorySet requestedActionCategories, SnapshotSpan range, CancellationToken cancellationToken)
@@ -104,30 +120,9 @@ namespace IniLanguageService
                 );
             }
 
-            private static bool IsFixable(string diagnosticId)
+            private bool IsFixable(string diagnosticId)
             {
-                return FixableDiagnosticIds.Contains(diagnosticId);
-            }
-
-            private IEnumerable<ISuggestedAction> GetCodeFixesForDiagnostic(IMappingTagSpan<IErrorTag> tagSpan)
-            {
-                DiagnosticErrorTag tag = tagSpan.Tag as DiagnosticErrorTag;
-                if (tag == null)
-                    yield break;
-
-                string diagnosticId = tag.Id;
-                SnapshotSpan snapshotSpan = tagSpan.Span.GetSpans(_buffer).First();
-
-                switch (diagnosticId)
-                {
-                    case "MultipleDeclarationsOfSection":
-                        yield return new MergeDeclarationsIntoFirstSection(snapshotSpan);
-                        break;
-
-                    case "RedundantPropertyDeclaration":
-                        yield return new RemoveRedundantPropertyDeclaration(snapshotSpan);
-                        break;
-                }
+                return _codeFixProviders.Any(cfp => cfp.CanFix(diagnosticId));
             }
 
 

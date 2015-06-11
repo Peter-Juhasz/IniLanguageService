@@ -26,16 +26,14 @@ namespace IniLanguageService.CodeRefactorings
             ;
         }
 
-        public ITextSnapshot ApplyRefactoring(IniSectionSyntax section)
+        public ITextEdit ApplyRefactoring(IniSectionSyntax section)
         {
             ITextBuffer buffer = section.Document.Snapshot.TextBuffer;
 
-            using (ITextEdit edit = buffer.CreateEdit())
-            {
-                edit.Delete(section.Span);
+            ITextEdit edit = buffer.CreateEdit();
+            edit.Delete(section.Span);
 
-                return edit.Apply();
-            }
+            return edit;
         }
     }
 }

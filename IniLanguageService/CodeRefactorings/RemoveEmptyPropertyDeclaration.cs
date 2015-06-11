@@ -27,17 +27,16 @@ namespace IniLanguageService.CodeRefactorings
             ;
         }
 
-        public ITextSnapshot ApplyRefactoring(IniPropertySyntax property)
+        public ITextEdit ApplyRefactoring(IniPropertySyntax property)
         {
             ITextBuffer buffer = property.Section.Document.Snapshot.TextBuffer;
 
-            using (ITextEdit edit = buffer.CreateEdit())
-            {
-                ITextSnapshotLine line = property.Span.Start.GetContainingLine();
-                edit.Delete(new SnapshotSpan(line.Start, line.EndIncludingLineBreak));
+            ITextEdit edit = buffer.CreateEdit();
+            
+            ITextSnapshotLine line = property.Span.Start.GetContainingLine();
+            edit.Delete(new SnapshotSpan(line.Start, line.EndIncludingLineBreak));
 
-                return edit.Apply();
-            }
+            return edit;
         }
     }
 }

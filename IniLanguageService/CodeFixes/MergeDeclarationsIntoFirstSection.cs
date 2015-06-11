@@ -1,105 +1,64 @@
-﻿using IniLanguageService.Syntax;
-using Microsoft.VisualStudio.Language.Intellisense;
+﻿using IniLanguageService.CodeRefactorings;
+using IniLanguageService.Syntax;
 using Microsoft.VisualStudio.Text;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
-using System.Threading;
-using System.Windows.Media;
 
 namespace IniLanguageService.CodeFixes
 {
-    internal sealed class MergeDeclarationsIntoFirstSection : ISuggestedAction
+    [Export(typeof(ICodeFixProvider))]
+    internal sealed class MergeDeclarationsIntoFirstSection : ICodeFixProvider
     {
-        public MergeDeclarationsIntoFirstSection(SnapshotSpan diagnosticSpan)
+        private static readonly IReadOnlyCollection<string> FixableIds = new string[]
         {
-            _span = diagnosticSpan;
+            "MultipleDeclarationsOfSection"
+        };
 
-            ITextBuffer buffer = _span.Snapshot.TextBuffer;
+        public IEnumerable<string> FixableDiagnosticIds
+        {
+            get { return FixableIds; }
+        }
+
+        public IEnumerable<CodeAction> GetFixes(SnapshotSpan span)
+        {
+            ITextBuffer buffer = span.Snapshot.TextBuffer;
             IniDocumentSyntax syntax = buffer.Properties.GetProperty<IniDocumentSyntax>("Syntax");
 
-            _current = syntax.Sections.First(s => s.NameToken.Span.Span == diagnosticSpan);
-            string sectionName = _current.NameToken.Value;
-            _base = syntax.Sections.First(s => s.NameToken.Value.Equals(sectionName, StringComparison.InvariantCultureIgnoreCase));
+            // find section
+            IniSectionSyntax section = syntax.Sections
+                .First(s => s.NameToken.Span.Span == span);
+
+            string sectionName = section.NameToken.Value;
+
+            // find first declaration
+            IniSectionSyntax @base = syntax.Sections
+                .First(s => s.NameToken.Value.Equals(sectionName, StringComparison.InvariantCultureIgnoreCase));
+
+            sectionName = @base.NameToken.Value;
+
+            yield return new CodeAction(
+                $"Merge declarations into the first '{sectionName}' section",
+                () => Fix(@base, section)
+            );
         }
         
-        private readonly SnapshotSpan _span;
-
-        private readonly IniSectionSyntax _base;
-        private readonly IniSectionSyntax _current;
-
-        public IEnumerable<SuggestedActionSet> ActionSets
+        public ITextEdit Fix(IniSectionSyntax @base, IniSectionSyntax current)
         {
-            get
-            {
-                return Enumerable.Empty<SuggestedActionSet>();
-            }
+            ITextBuffer buffer = @base.Document.Snapshot.TextBuffer;
+
+            ITextEdit edit = buffer.CreateEdit();
+            edit.Insert(
+                @base.Span.End,
+                new SnapshotSpan(
+                    current.ClosingBracketToken.Span.Span.End,
+                    current.Span.End
+                ).GetText()
+            );
+            edit.Delete(current.Span);
+
+            return edit;
         }
-
-        public string DisplayText
-        {
-            get
-            {
-                return $"Merge declarations into the first '{_base.NameToken.Span.Span.GetText()}' section";
-            }
-        }
-
-        public string IconAutomationText
-        {
-            get
-            {
-                return null;
-            }
-        }
-
-        public ImageSource IconSource
-        {
-            get
-            {
-                return null;
-            }
-        }
-
-        public string InputGestureText
-        {
-            get
-            {
-                return null;
-            }
-        }
-
-        public object GetPreview(CancellationToken cancellationToken)
-        {
-            return null;
-        }
-
-        public void Invoke(CancellationToken cancellationToken)
-        {
-            ITextBuffer buffer = _base.Document.Snapshot.TextBuffer;
-
-            using (ITextEdit edit = buffer.CreateEdit())
-            {
-                edit.Insert(
-                    _base.Span.End,
-                    new SnapshotSpan(
-                        _current.ClosingBracketToken.Span.Span.End,
-                        _current.Span.End
-                    ).GetText()
-                );
-                edit.Delete(_current.Span);
-
-                edit.Apply();
-            }
-        }
-
-
-        public bool TryGetTelemetryId(out Guid telemetryId)
-        {
-            telemetryId = Guid.Empty;
-            return false;
-        }
-
-        void IDisposable.Dispose()
-        { }
     }
 }
