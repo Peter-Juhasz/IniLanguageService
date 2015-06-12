@@ -50,6 +50,10 @@
     <Compile Include="CodeRefactorings\RemoveEmptyPropertyDeclaration.cs" />
     <Compile Include="ContentTypes.cs" />
     <Compile Include="Diagnostics\DiagnosticErrorTag.cs" />
+    <Compile Include="Diagnostics\ISyntaxNodeAnalyzer.cs" />
+    <Compile Include="Diagnostics\IDiagnosticAnalyzer.cs" />
+    <Compile Include="Diagnostics\MultipleDeclarationsOfSection.cs" />
+    <Compile Include="Diagnostics\RedundantPropertyDeclaration.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="ReferenceHighlighting\IniHighlightReferencesTagger.cs" />
     <Compile Include="QuickInfo\IniQuickInfoProvider.cs" />

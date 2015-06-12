@@ -14,7 +14,7 @@ namespace IniLanguageService.CodeRefactorings
             ITextBuffer buffer = span.Snapshot.TextBuffer;
             IniDocumentSyntax syntax = buffer.Properties.GetProperty<IniDocumentSyntax>("Syntax");
 
-            // find applicable properties
+            // find applicable sections
             return
                 from section in syntax.Sections
                 where section.Span.IntersectsWith(span)

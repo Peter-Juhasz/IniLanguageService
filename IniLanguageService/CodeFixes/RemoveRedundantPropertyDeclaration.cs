@@ -1,4 +1,5 @@
 ﻿using IniLanguageService.CodeRefactorings;
+using IniLanguageService.Diagnostics;
 using IniLanguageService.Syntax;
 using Microsoft.VisualStudio.Text;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace IniLanguageService.CodeFixes
     {
         private static readonly IReadOnlyCollection<string> FixableIds = new string[]
         {
-            "RedundantPropertyDeclaration"
+            RedundantPropertyDeclaration.Id
         };
         
         public IEnumerable<string> FixableDiagnosticIds

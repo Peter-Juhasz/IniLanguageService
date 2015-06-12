@@ -2,6 +2,11 @@
 
 namespace IniLanguageService
 {
+    public interface IDiagnosticErrorTag : IErrorTag
+    {
+        string Id { get; }
+    }
+
     internal class DiagnosticErrorTag : ErrorTag
     {
         public DiagnosticErrorTag(string errorType, string id, object toolTipContent)
