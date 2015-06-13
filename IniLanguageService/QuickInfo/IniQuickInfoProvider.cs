@@ -36,12 +36,13 @@ namespace IniLanguageService
                 ITrackingPoint triggerPoint = session.GetTriggerPoint(_buffer);
                 SnapshotPoint point = triggerPoint.GetPoint(snapshot);
 
-                IniDocumentSyntax syntax = _buffer.Properties.GetProperty<IniDocumentSyntax>("Syntax");
+                SyntaxTree syntax = snapshot.GetSyntaxTree();
+                IniDocumentSyntax root = syntax.Root as IniDocumentSyntax;
 
                 applicableToSpan = null;
 
                 // find section
-                IniSectionSyntax section = syntax.Sections
+                IniSectionSyntax section = root.Sections
                     .FirstOrDefault(s => s.Span.Span.Contains(point));
 
                 if (section != null)

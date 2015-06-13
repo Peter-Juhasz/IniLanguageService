@@ -55,11 +55,12 @@ namespace IniLanguageService
             public IEnumerable<ITagSpan<ITextMarkerTag>> GetTags(NormalizedSnapshotSpanCollection spans)
             {
                 ITextBuffer buffer = spans.First().Snapshot.TextBuffer;
-                IniDocumentSyntax syntax = buffer.Properties.GetProperty<IniDocumentSyntax>("Syntax");
+                SyntaxTree syntax = buffer.GetSyntaxTree();
+                IniDocumentSyntax root = syntax.Root as IniDocumentSyntax;
 
                 SnapshotPoint caret = _view.Caret.Position.BufferPosition;
 
-                IniSectionSyntax section = syntax.Sections
+                IniSectionSyntax section = root.Sections
                     .Where(
                         s => !s.OpeningBracketToken.IsMissing
                           && !s.ClosingBracketToken.IsMissing

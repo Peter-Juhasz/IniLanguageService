@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Utilities;
+using IniLanguageService.Syntax;
 
 namespace IniLanguageService
 {
@@ -10,6 +11,7 @@ namespace IniLanguageService
     /// </summary>
     [Export(typeof(IClassifierProvider))]
     [ContentType(ContentTypes.Ini)] // This classifier applies to all text files.
+    [Order(Before = Priority.High)]
     internal class IniClassifierProvider : IClassifierProvider
     {
         // Disable "Field is never assigned to..." compiler's warning. Justification: the field is assigned by MEF.
@@ -22,6 +24,9 @@ namespace IniLanguageService
         [Import]
         private IClassificationTypeRegistryService classificationRegistry;
 
+        [Import("INI")]
+        private ILexicalParser lexicalParser;
+
 #pragma warning restore 649
 
 
@@ -32,7 +37,9 @@ namespace IniLanguageService
         /// <returns>A classifier for the text buffer, or null if the provider cannot do so in its current state.</returns>
         public IClassifier GetClassifier(ITextBuffer buffer)
         {
-            return buffer.Properties.GetOrCreateSingletonProperty<IniClassifier>(creator: () => new IniClassifier(buffer, this.classificationRegistry));
+            return buffer.Properties.GetOrCreateSingletonProperty<IniClassifier>(
+                creator: () => new IniClassifier(buffer, lexicalParser, this.classificationRegistry)
+            );
         }
     }
 }

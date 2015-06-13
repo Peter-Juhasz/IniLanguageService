@@ -67,11 +67,14 @@
     <Compile Include="Diagnostics\IniErrorTagger.cs" />
     <Compile Include="Outlining\IniOutliningTagger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Syntax\ILexicalParser.cs" />
+    <Compile Include="Syntax\IniLexicalParser.cs" />
     <Compile Include="Syntax\IniPropertySyntax.cs" />
     <Compile Include="Syntax\SyntaxNode.cs" />
     <Compile Include="Syntax\IniSectionSyntax.cs" />
     <Compile Include="Syntax\IniDocumentSyntax.cs" />
     <Compile Include="Syntax\SnapshotToken.cs" />
+    <Compile Include="Syntax\SyntaxTree.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="source.extension.vsixmanifest">

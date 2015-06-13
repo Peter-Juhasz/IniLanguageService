@@ -71,9 +71,6 @@ namespace IniLanguageService
 
             public IEnumerable<SuggestedActionSet> GetSuggestedActions(ISuggestedActionCategorySet requestedActionCategories, SnapshotSpan range, CancellationToken cancellationToken)
             {
-                ITextBuffer buffer = range.Snapshot.TextBuffer;
-                IniDocumentSyntax syntax = buffer.Properties.GetProperty<IniDocumentSyntax>("Syntax");
-
                 return
                     (
                         // code fixes

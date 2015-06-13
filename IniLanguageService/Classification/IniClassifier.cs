@@ -29,8 +29,10 @@ namespace IniLanguageService
         /// Initializes a new instance of the <see cref="IniClassifier"/> class.
         /// </summary>
         /// <param name="registry">Classification registry.</param>
-        internal IniClassifier(ITextBuffer buffer, IClassificationTypeRegistryService registry)
+        internal IniClassifier(ITextBuffer buffer, ILexicalParser lexicalParser, IClassificationTypeRegistryService registry)
         {
+            _lexicalParser = buffer.Properties.GetOrCreateSingletonProperty<ILexicalParser>("Parser", () => lexicalParser);
+
             _commentType = registry.GetClassificationType(PredefinedClassificationTypeNames.Comment);
             _delimiterType = registry.GetClassificationType("INI/Delimiter");
             _propertyNameType = registry.GetClassificationType("INI/PropertyName");
@@ -39,21 +41,25 @@ namespace IniLanguageService
             
             buffer.ChangedHighPriority += OnBufferChanged;
 
-            IniDocumentSyntax syntax = Parse(buffer.CurrentSnapshot);
-            buffer.Properties.AddProperty("Syntax", syntax);
+            SyntaxTree syntaxTree = buffer.GetSyntaxTree();
+            buffer.Properties.AddProperty("Syntax", syntaxTree);
         }
+
+        private readonly ILexicalParser _lexicalParser;
 
         private void OnBufferChanged(object sender, TextContentChangedEventArgs e)
         {
             ITextBuffer buffer = sender as ITextBuffer;
             
             // reparse
-            IniDocumentSyntax syntax = buffer.Properties.GetOrCreateSingletonProperty<IniDocumentSyntax>("Syntax", () => Parse(buffer.CurrentSnapshot));
-            if (syntax.Snapshot != buffer.CurrentSnapshot)
+            SyntaxTree syntaxTree = buffer.GetSyntaxTree();
+            IniDocumentSyntax root = syntaxTree.Root as IniDocumentSyntax;
+
+            if (syntaxTree.Snapshot != buffer.CurrentSnapshot)
             {
                 buffer.Properties.RemoveProperty("Syntax");
-                syntax = Parse(buffer.CurrentSnapshot);
-                buffer.Properties.AddProperty("Syntax", syntax);
+                syntaxTree = _lexicalParser.Parse(buffer.CurrentSnapshot);
+                buffer.Properties.AddProperty("Syntax", syntaxTree);
             }
 
             // format
@@ -66,7 +72,7 @@ namespace IniLanguageService
                     // format on ']'
                     if (change.NewText == "]")
                     {
-                        IniSectionSyntax section = syntax.Sections
+                        IniSectionSyntax section = root.Sections
                             .FirstOrDefault(s => s.ClosingBracketToken.Span.Span == change.NewSpan);
 
                         if (section != null)
@@ -88,7 +94,7 @@ namespace IniLanguageService
                     // format on '='
                     else if (change.NewText == "=")
                     {
-                        IniPropertySyntax property = syntax.Sections
+                        IniPropertySyntax property = root.Sections
                             .SelectMany(s => s.Properties)
                             .FirstOrDefault(p => p.DelimiterToken.Span.Span == change.NewSpan);
 
@@ -127,103 +133,6 @@ namespace IniLanguageService
                 }
             }
         }
-
-        protected IniDocumentSyntax Parse(ITextSnapshot snapshot)
-        {
-            IniDocumentSyntax root = new IniDocumentSyntax() { Snapshot = snapshot };
-
-            List<SnapshotToken> leadingTrivia = new List<SnapshotToken>();
-            IniSectionSyntax section = null;
-
-            foreach (ITextSnapshotLine line in snapshot.Lines)
-            {
-                SnapshotPoint cursor = line.Start;
-                snapshot.ReadWhiteSpace(ref cursor); // skip white space
-
-                // skip blank lines
-                if (cursor == line.End)
-                    continue;
-
-                char first = cursor.GetChar();
-
-                // comment
-                if (first == ';')
-                {
-                    SnapshotToken commentToken = new SnapshotToken(snapshot.ReadComment(ref cursor), _commentType);
-                    leadingTrivia.Add(commentToken);
-                }
-
-                // section
-                else if (first == '[')
-                {
-                    if (section != null)
-                        root.Sections.Add(section);
-
-                    SnapshotToken openingBracket = new SnapshotToken(snapshot.ReadDelimiter(ref cursor), _delimiterType);
-                    snapshot.ReadWhiteSpace(ref cursor);
-                    SnapshotToken name = new SnapshotToken(snapshot.ReadSectionName(ref cursor), _sectionNameType);
-                    snapshot.ReadWhiteSpace(ref cursor);
-                    SnapshotToken closingBracket = new SnapshotToken(snapshot.ReadDelimiter(ref cursor), _delimiterType);
-                    snapshot.ReadWhiteSpace(ref cursor);
-                    SnapshotToken commentToken = new SnapshotToken(snapshot.ReadComment(ref cursor), _commentType);
-
-                    IList<SnapshotToken> trailingTrivia = new List<SnapshotToken>();
-                    if (!commentToken.IsMissing)
-                        trailingTrivia.Add(commentToken);
-
-                    section = new IniSectionSyntax()
-                    {
-                        Document = root,
-                        LeadingTrivia = leadingTrivia,
-                        OpeningBracketToken = openingBracket,
-                        NameToken = name,
-                        ClosingBracketToken = closingBracket,
-                        TrailingTrivia = trailingTrivia,
-                    };
-                    leadingTrivia = new List<SnapshotToken>();
-                }
-
-                // property
-                else if (Char.IsLetter(first))
-                {
-                    SnapshotToken name = new SnapshotToken(snapshot.ReadPropertyName(ref cursor), _propertyNameType);
-                    snapshot.ReadWhiteSpace(ref cursor);
-                    SnapshotToken delimiter = new SnapshotToken(snapshot.ReadDelimiter(ref cursor), _delimiterType);
-                    snapshot.ReadWhiteSpace(ref cursor);
-                    SnapshotToken value = new SnapshotToken(snapshot.ReadPropertyValue(ref cursor), _propertyValueType);
-                    snapshot.ReadWhiteSpace(ref cursor);
-                    SnapshotToken commentToken = new SnapshotToken(snapshot.ReadComment(ref cursor), _commentType);
-
-                    IList<SnapshotToken> trailingTrivia = new List<SnapshotToken>();
-                    if (!commentToken.IsMissing)
-                        trailingTrivia.Add(commentToken);
-
-                    IniPropertySyntax property = new IniPropertySyntax()
-                    {
-                        Section = section,
-                        LeadingTrivia = leadingTrivia,
-                        NameToken = name,
-                        DelimiterToken = delimiter,
-                        ValueToken = value,
-                        TrailingTrivia = trailingTrivia,
-                    };
-                    section.Properties.Add(property);
-                    leadingTrivia = new List<SnapshotToken>();
-                }
-
-                // error
-                else
-                    ; // TODO: report error
-            }
-
-            if (section != null && leadingTrivia.Any())
-                foreach (var trivia in leadingTrivia)
-                    section.TrailingTrivia.Add(trivia);
-
-            root.Sections.Add(section);
-
-            return root;
-        }
         
 
 #pragma warning disable 67
@@ -251,86 +160,14 @@ namespace IniLanguageService
         /// <returns>A list of ClassificationSpans that represent spans identified to be of this classification.</returns>
         public IList<ClassificationSpan> GetClassificationSpans(SnapshotSpan span)
         {
-            IniDocumentSyntax syntax = span.Snapshot.TextBuffer.Properties.GetOrCreateSingletonProperty<IniDocumentSyntax>("Syntax", () => Parse(span.Snapshot));
+            SyntaxTree syntaxTree = span.Snapshot.GetSyntaxTree();
 
             return (
-                from token in syntax.GetTokens()
+                from token in syntaxTree.Root.GetTokens()
                 where !token.IsMissing
                 where token.Span.Span.IntersectsWith(span)
                 select token.Span
             ).ToList();
-        }
-    }
-
-
-    internal static class IniScanner
-    {
-        public static SnapshotSpan ReadDelimiter(this ITextSnapshot snapshot, ref SnapshotPoint point)
-        {
-            var @char = point.GetChar();
-
-            if (point.Position == snapshot.Length || (@char != '[' && @char != ']' && @char != '='))
-                return new SnapshotSpan(point, 0);
-
-            point = point + 1;
-            return new SnapshotSpan(point - 1, 1);
-        }
-        public static SnapshotSpan ReadSectionName(this ITextSnapshot snapshot, ref SnapshotPoint point)
-        {
-            return snapshot.ReadToCommentOrLineEndWhile(ref point, c => c != ']');
-        }
-        public static SnapshotSpan ReadPropertyName(this ITextSnapshot snapshot, ref SnapshotPoint point)
-        {
-            return snapshot.ReadToCommentOrLineEndWhile(ref point, c => c != '=');
-        }
-        public static SnapshotSpan ReadPropertyValue(this ITextSnapshot snapshot, ref SnapshotPoint point)
-        {
-            return snapshot.ReadToCommentOrLineEndWhile(ref point, _ => true);
-        }
-
-        public static SnapshotSpan ReadComment(this ITextSnapshot snapshot, ref SnapshotPoint point)
-        {
-            if (point.Position == snapshot.Length || point.GetChar() != ';')
-                return new SnapshotSpan(point, 0);
-
-            return snapshot.ReadToLineEndWhile(ref point, _ => true);
-        }
-
-        public static SnapshotSpan ReadToCommentOrLineEndWhile(this ITextSnapshot snapshot, ref SnapshotPoint point, Predicate<char> predicate)
-        {
-            return snapshot.ReadToLineEndWhile(ref point, c => c != ';' && predicate(c));
-        }
-
-    }
-
-    internal static class CommonScanner
-    {
-        public static SnapshotSpan ReadWhiteSpace(this ITextSnapshot snapshot, ref SnapshotPoint point)
-        {
-            return snapshot.ReadToLineEndWhile(ref point, Char.IsWhiteSpace, rewindWhiteSpace: false);
-        }
-
-        public static SnapshotSpan ReadToLineEndWhile(this ITextSnapshot snapshot, ref SnapshotPoint point, Predicate<char> predicate, bool rewindWhiteSpace = true)
-        {
-            SnapshotPoint start = point;
-
-            while (
-                point.Position < snapshot.Length &&
-                point.GetChar() != '\n' && point.GetChar() != '\r' &&
-                predicate(point.GetChar())
-            )
-                point = point + 1;
-
-            if (rewindWhiteSpace)
-            {
-                while (
-                    point - 1 >= start &&
-                    Char.IsWhiteSpace((point - 1).GetChar())
-                )
-                    point = point - 1;
-            }
-
-            return new SnapshotSpan(start, point);
         }
     }
 }

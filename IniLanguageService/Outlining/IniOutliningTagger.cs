@@ -25,10 +25,11 @@ namespace IniLanguageService
             public IEnumerable<ITagSpan<IOutliningRegionTag>> GetTags(NormalizedSnapshotSpanCollection spans)
             {
                 ITextBuffer buffer = spans.First().Snapshot.TextBuffer;
-                IniDocumentSyntax syntax = buffer.Properties.GetProperty<IniDocumentSyntax>("Syntax");
-                
+                SyntaxTree syntax = buffer.GetSyntaxTree();
+                IniDocumentSyntax root = syntax.Root as IniDocumentSyntax;
+
                 return
-                    from section in syntax.Sections
+                    from section in root.Sections
                     where section.Properties.Count > 0
                     where spans.Any(s => section.Span.IntersectsWith(s))
                     let last = section.Properties.Last()

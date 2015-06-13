@@ -46,12 +46,14 @@ namespace IniLanguageService
             public IEnumerable<ITagSpan<ITextMarkerTag>> GetTags(NormalizedSnapshotSpanCollection spans)
             {
                 ITextBuffer buffer = spans.First().Snapshot.TextBuffer;
-                IniDocumentSyntax syntax = buffer.Properties.GetProperty<IniDocumentSyntax>("Syntax");
+                SyntaxTree syntax = buffer.GetSyntaxTree();
+                IniDocumentSyntax root = syntax.Root as IniDocumentSyntax;
+                
 
                 SnapshotPoint caret = _view.Caret.Position.BufferPosition;
 
                 // find section
-                IniSectionSyntax section = syntax.Sections
+                IniSectionSyntax section = root.Sections
                     .FirstOrDefault(s => s.Span.Contains(caret));
 
                 // show duplicate sections

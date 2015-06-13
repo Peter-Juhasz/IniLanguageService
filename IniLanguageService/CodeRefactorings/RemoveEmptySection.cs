@@ -12,11 +12,12 @@ namespace IniLanguageService.CodeRefactorings
         public IEnumerable<CodeAction> GetRefactorings(SnapshotSpan span)
         {
             ITextBuffer buffer = span.Snapshot.TextBuffer;
-            IniDocumentSyntax syntax = buffer.Properties.GetProperty<IniDocumentSyntax>("Syntax");
+            SyntaxTree syntax = buffer.GetSyntaxTree();
+            IniDocumentSyntax root = syntax.Root as IniDocumentSyntax;
 
             // find applicable sections
             return
-                from section in syntax.Sections
+                from section in root.Sections
                 where section.Span.IntersectsWith(span)
                 where !section.NameToken.IsMissing && !section.ClosingBracketToken.IsMissing
                 where section.Properties.Count == 0

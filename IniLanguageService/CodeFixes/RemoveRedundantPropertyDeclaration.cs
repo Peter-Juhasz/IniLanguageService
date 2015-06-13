@@ -24,10 +24,11 @@ namespace IniLanguageService.CodeFixes
         public IEnumerable<CodeAction> GetFixes(SnapshotSpan span)
         {
             ITextBuffer buffer = span.Snapshot.TextBuffer;
-            IniDocumentSyntax syntax = buffer.Properties.GetProperty<IniDocumentSyntax>("Syntax");
+            SyntaxTree syntax = buffer.GetSyntaxTree();
+            IniDocumentSyntax root = syntax.Root as IniDocumentSyntax;
 
             // find section
-            IniPropertySyntax property = syntax.Sections
+            IniPropertySyntax property = root.Sections
                 .SelectMany(s => s.Properties)
                 .First(s => s.Span == span);
 

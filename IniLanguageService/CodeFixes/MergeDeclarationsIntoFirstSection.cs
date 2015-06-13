@@ -24,16 +24,17 @@ namespace IniLanguageService.CodeFixes
         public IEnumerable<CodeAction> GetFixes(SnapshotSpan span)
         {
             ITextBuffer buffer = span.Snapshot.TextBuffer;
-            IniDocumentSyntax syntax = buffer.Properties.GetProperty<IniDocumentSyntax>("Syntax");
+            SyntaxTree syntax = buffer.GetSyntaxTree();
+            IniDocumentSyntax root = syntax.Root as IniDocumentSyntax;
 
             // find section
-            IniSectionSyntax section = syntax.Sections
+            IniSectionSyntax section = root.Sections
                 .First(s => s.NameToken.Span.Span == span);
 
             string sectionName = section.NameToken.Value;
 
             // find first declaration
-            IniSectionSyntax @base = syntax.Sections
+            IniSectionSyntax @base = root.Sections
                 .First(s => s.NameToken.Value.Equals(sectionName, StringComparison.InvariantCultureIgnoreCase));
 
             sectionName = @base.NameToken.Value;
