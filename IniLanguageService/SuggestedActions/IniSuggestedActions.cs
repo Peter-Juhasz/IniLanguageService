@@ -1,6 +1,5 @@
 ﻿using IniLanguageService.CodeFixes;
 using IniLanguageService.CodeRefactorings;
-using IniLanguageService.Syntax;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;

@@ -1,6 +1,6 @@
-﻿using IniLanguageService.Syntax;
+﻿using IniLanguageService.Diagnostics;
+using IniLanguageService.Syntax;
 using Microsoft.VisualStudio.Text;
-using Microsoft.VisualStudio.Text.Adornments;
 using Microsoft.VisualStudio.Text.Tagging;
 using Microsoft.VisualStudio.Utilities;
 using System;
@@ -15,16 +15,32 @@ namespace IniLanguageService
     [ContentType(IniContentTypeNames.Ini)]
     internal sealed class IniErrorTaggerProvider : ITaggerProvider
     {
+#pragma warning disable 649
+
+        [ImportMany]
+        private IEnumerable<IDiagnosticAnalyzer> analyzers;
+
+#pragma warning restore 649
+
+
         public ITagger<T> CreateTagger<T>(ITextBuffer buffer) where T : ITag
         {
             return buffer.Properties.GetOrCreateSingletonProperty(
-                creator: () => new IniErrorTagger()
+                creator: () => new IniErrorTagger(analyzers)
             ) as ITagger<T>;
         }
 
 
         private sealed class IniErrorTagger : ITagger<IErrorTag>
         {
+            public IniErrorTagger(IEnumerable<IDiagnosticAnalyzer> analyzers)
+            {
+                _analyzers = analyzers;
+            }
+
+            private readonly IEnumerable<IDiagnosticAnalyzer> _analyzers;
+            
+
             public IEnumerable<ITagSpan<IErrorTag>> GetTags(NormalizedSnapshotSpanCollection spans)
             {
                 ITextBuffer buffer = spans.First().Snapshot.TextBuffer;
@@ -32,112 +48,30 @@ namespace IniLanguageService
                 IniDocumentSyntax root = syntax.Root as IniDocumentSyntax;
 
                 return
-                    from section in root.Sections
-                    where spans.Any(s => section.Span.IntersectsWith(s))
+                    // find intersecting nodes
+                    from node in root.DescendantsAndSelf()
+                    where spans.IntersectsWith(node.Span)
+                    let type = node.GetType()
+                    
+                    // find analyzers for node
+                    from analyzer in _analyzers
+                    from @interface in analyzer.GetType().GetInterfaces()
+                    where @interface.IsGenericType
+                       && @interface.GetGenericTypeDefinition() == typeof(ISyntaxNodeAnalyzer<>)
+                    let analyzerNodeType = @interface.GetGenericArguments().Single()
+                    where analyzerNodeType.IsAssignableFrom(type)
 
-                    from diagnostic in Analyze(section)
-                    where spans.Any(s => diagnostic.Span.IntersectsWith(s))
+                    // analyze node
+                    from diagnostic in typeof(ISyntaxNodeAnalyzer<>)
+                        .MakeGenericType(analyzerNodeType)
+                        .GetMethod("Analyze")
+                        .Invoke(analyzer, new [] { node }) as IEnumerable<ITagSpan<IErrorTag>>
+                    where spans.IntersectsWith(diagnostic.Span)
                     select diagnostic
                 ;
             }
 
             public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
-
-            private static IEnumerable<TagSpan<IErrorTag>> Analyze(IniSectionSyntax section)
-            {
-                // section name is missing
-                if (section.NameToken.IsMissing)
-                {
-                    yield return new TagSpan<IErrorTag>(
-                        section.NameToken.Span.Span,
-                        new ErrorTag(PredefinedErrorTypeNames.SyntaxError, "Section name expected")
-                    );
-                }
-
-                // closing bracket is missing
-                else if (section.ClosingBracketToken.IsMissing)
-                {
-                    yield return new TagSpan<IErrorTag>(
-                        section.ClosingBracketToken.Span.Span,
-                        new DiagnosticErrorTag(PredefinedErrorTypeNames.SyntaxError, "SectionNameClosingBracketMissing", "']' expected")
-                    );
-                }
-
-                // get child diagnostics
-                foreach (var diagnostic in section.Properties.SelectMany(Analyze))
-                    yield return diagnostic;
-                
-
-                // check for duplicate sections
-                string name = section.NameToken.Value;
-
-                var other = section.Document.Sections
-                    .FirstOrDefault(
-                        s => s.NameToken.Value.Equals(name, StringComparison.InvariantCultureIgnoreCase)
-                    );
-
-                if (other != section)
-                {
-                    yield return new TagSpan<IErrorTag>(
-                        section.NameToken.Span.Span,
-                        new DiagnosticErrorTag(PredefinedErrorTypeNames.Warning, "MultipleDeclarationsOfSection", $"Multiple declarations of section '{name}'")
-                    );
-                }
-            }
-
-            private static IEnumerable<TagSpan<IErrorTag>> Analyze(IniPropertySyntax property)
-            {
-                // delimiter missing
-                if (property.DelimiterToken.IsMissing)
-                {
-                    yield return new TagSpan<IErrorTag>(
-                        property.DelimiterToken.Span.Span,
-                        new DiagnosticErrorTag(PredefinedErrorTypeNames.SyntaxError, "PropertyNameValueDelimiterExpected", "'=' expected")
-                    );
-                }
-                else
-                {
-                    // check for duplicate properties
-                    string sectionName = property.Section.NameToken.Value;
-                    string name = property.NameToken.Value;
-
-                    var propertiesWithSameName = (
-                        from s in property.Section.Document.Sections
-                        where s.NameToken.Value.Equals(sectionName, StringComparison.InvariantCultureIgnoreCase)
-                        from p in s.Properties
-                        where p.NameToken.Value.Equals(name, StringComparison.InvariantCultureIgnoreCase)
-                        select p
-                    ).ToList();
-
-                    // check for redundant declarations (name and value matches)
-                    string value = property.ValueToken.Value;
-
-                    var other = propertiesWithSameName
-                        .FirstOrDefault(p => p.ValueToken.Value == value);
-
-                    if (other != property)
-                    {
-                        yield return new TagSpan<IErrorTag>(
-                            property.Span,
-                            new DiagnosticErrorTag(PredefinedErrorTypeNames.Warning, "RedundantPropertyDeclaration", $"Redundant declaration of property '{name}'")
-                        );
-                    }
-
-                    // report only name equality
-                    else
-                    {
-                        other = propertiesWithSameName.FirstOrDefault();
-
-                        if (other != property)
-                        {
-                            yield return new TagSpan<IErrorTag>(
-                                property.NameToken.Span.Span,
-                                new ErrorTag(PredefinedErrorTypeNames.Warning, $"Multiple declarations of property '{name}'")
-                            );
-                        }
-                    }
-                }
-            }
         }
     }
 }
