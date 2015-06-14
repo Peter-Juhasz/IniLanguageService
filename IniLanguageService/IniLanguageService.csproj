@@ -48,7 +48,7 @@
     <Compile Include="CodeRefactorings\ICodeRefactoringProvider.cs" />
     <Compile Include="CodeRefactorings\RemoveEmptySection.cs" />
     <Compile Include="CodeRefactorings\RemoveEmptyPropertyDeclaration.cs" />
-    <Compile Include="ContentTypes.cs" />
+    <Compile Include="IniContentTypeNames.cs" />
     <Compile Include="Diagnostics\DiagnosticErrorTag.cs" />
     <Compile Include="Diagnostics\ISyntaxNodeAnalyzer.cs" />
     <Compile Include="Diagnostics\IDiagnosticAnalyzer.cs" />

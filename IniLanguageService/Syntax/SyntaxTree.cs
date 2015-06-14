@@ -41,9 +41,18 @@ namespace IniLanguageService.Syntax
         {
             ITextBuffer buffer = snapshot.TextBuffer;
 
-            return buffer.Properties.GetOrCreateSingletonProperty<SyntaxTree>("Syntax",
-                () => buffer.Properties.GetProperty<ILexicalParser>("Parser").Parse(snapshot)
-            );
+            SyntaxTree syntaxTree = null;
+            buffer.Properties.TryGetProperty<SyntaxTree>(typeof(SyntaxTree), out syntaxTree);
+
+            if (syntaxTree == null ||
+                syntaxTree.Snapshot != snapshot)
+            {
+                ILexicalParser lexicalParser = null;
+                if (buffer.Properties.TryGetProperty<ILexicalParser>(typeof(ILexicalParser), out lexicalParser))
+                    syntaxTree = lexicalParser.Parse(snapshot);
+            }
+
+            return syntaxTree;
         }
     }
 }

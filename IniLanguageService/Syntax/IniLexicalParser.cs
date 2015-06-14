@@ -11,6 +11,7 @@ namespace IniLanguageService.Syntax
     [Export("INI", typeof(ILexicalParser))]
     internal class IniLexicalParser : ILexicalParser
     {
+        [ImportingConstructor]
         public IniLexicalParser(IClassificationTypeRegistryService registry)
         {
             _commentType = registry.GetClassificationType(PredefinedClassificationTypeNames.Comment);

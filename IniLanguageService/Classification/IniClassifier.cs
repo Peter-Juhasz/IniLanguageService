@@ -31,7 +31,7 @@ namespace IniLanguageService
         /// <param name="registry">Classification registry.</param>
         internal IniClassifier(ITextBuffer buffer, ILexicalParser lexicalParser, IClassificationTypeRegistryService registry)
         {
-            _lexicalParser = buffer.Properties.GetOrCreateSingletonProperty<ILexicalParser>("Parser", () => lexicalParser);
+            _lexicalParser = buffer.Properties.GetOrCreateSingletonProperty<ILexicalParser>(() => lexicalParser);
 
             _commentType = registry.GetClassificationType(PredefinedClassificationTypeNames.Comment);
             _delimiterType = registry.GetClassificationType("INI/Delimiter");
@@ -42,7 +42,7 @@ namespace IniLanguageService
             buffer.ChangedHighPriority += OnBufferChanged;
 
             SyntaxTree syntaxTree = buffer.GetSyntaxTree();
-            buffer.Properties.AddProperty("Syntax", syntaxTree);
+            buffer.Properties.AddProperty(typeof(SyntaxTree), syntaxTree);
         }
 
         private readonly ILexicalParser _lexicalParser;
@@ -57,9 +57,9 @@ namespace IniLanguageService
 
             if (syntaxTree.Snapshot != buffer.CurrentSnapshot)
             {
-                buffer.Properties.RemoveProperty("Syntax");
+                buffer.Properties.RemoveProperty(typeof(SyntaxTree));
                 syntaxTree = _lexicalParser.Parse(buffer.CurrentSnapshot);
-                buffer.Properties.AddProperty("Syntax", syntaxTree);
+                buffer.Properties.AddProperty(typeof(SyntaxTree), syntaxTree);
             }
 
             // format

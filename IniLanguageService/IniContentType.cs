@@ -24,7 +24,7 @@ namespace IniLanguageService
 
         [Export]
         [FileExtension(".ini")]
-        [ContentType(ContentTypes.Ini)]
+        [ContentType(IniContentTypeNames.Ini)]
         internal static FileExtensionToContentTypeDefinition iniFileExtensionToContentTypeDefinition;
 
 #pragma warning restore 649

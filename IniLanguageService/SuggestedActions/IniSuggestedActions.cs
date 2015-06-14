@@ -17,7 +17,7 @@ namespace IniLanguageService
 {
     [Export(typeof(ISuggestedActionsSourceProvider))]
     [Name("Ini Suggested Actions")]
-    [ContentType(ContentTypes.Ini)]
+    [ContentType(IniContentTypeNames.Ini)]
     internal class IniSuggestedActionsProvider : ISuggestedActionsSourceProvider
     {
 #pragma warning disable 649

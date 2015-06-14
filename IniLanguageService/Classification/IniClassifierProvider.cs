@@ -10,7 +10,7 @@ namespace IniLanguageService
     /// Classifier provider. It adds the classifier to the set of classifiers.
     /// </summary>
     [Export(typeof(IClassifierProvider))]
-    [ContentType(ContentTypes.Ini)] // This classifier applies to all text files.
+    [ContentType(IniContentTypeNames.Ini)] // This classifier applies to all text files.
     [Order(Before = Priority.High)]
     internal class IniClassifierProvider : IClassifierProvider
     {

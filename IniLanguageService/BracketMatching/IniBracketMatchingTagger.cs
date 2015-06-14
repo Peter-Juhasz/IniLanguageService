@@ -12,7 +12,7 @@ namespace IniLanguageService
 {
     [Export(typeof(IViewTaggerProvider))]
     [TagType(typeof(ITextMarkerTag))]
-    [ContentType(ContentTypes.Ini)]
+    [ContentType(IniContentTypeNames.Ini)]
     internal class IniBracketMatchingTaggerProvider : IViewTaggerProvider
     {
         public ITagger<T> CreateTagger<T>(ITextView textView, ITextBuffer buffer) where T : ITag

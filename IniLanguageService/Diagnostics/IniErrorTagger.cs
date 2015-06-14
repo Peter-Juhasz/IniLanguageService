@@ -12,7 +12,7 @@ namespace IniLanguageService
 {
     [Export(typeof(ITaggerProvider))]
     [TagType(typeof(IErrorTag))]
-    [ContentType(ContentTypes.Ini)]
+    [ContentType(IniContentTypeNames.Ini)]
     internal class IniErrorTaggerProvider : ITaggerProvider
     {
         public ITagger<T> CreateTagger<T>(ITextBuffer buffer) where T : ITag

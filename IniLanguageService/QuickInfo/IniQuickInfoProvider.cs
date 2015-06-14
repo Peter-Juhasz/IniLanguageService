@@ -11,7 +11,7 @@ namespace IniLanguageService
 {
     [Export(typeof(IQuickInfoSourceProvider))]
     [Name("INI Quick Info Provider")]
-    [ContentType(ContentTypes.Ini)]
+    [ContentType(IniContentTypeNames.Ini)]
     internal class IniQuickInfoSourceProvider : IQuickInfoSourceProvider
     {
         public IQuickInfoSource TryCreateQuickInfoSource(ITextBuffer textBuffer)

@@ -11,7 +11,7 @@ namespace IniLanguageService
 {
     [Export(typeof(ITaggerProvider))]
     [TagType(typeof(IOutliningRegionTag))]
-    [ContentType(ContentTypes.Ini)]
+    [ContentType(IniContentTypeNames.Ini)]
     internal class IniOutliningTaggerProvider : ITaggerProvider
     {
         public ITagger<T> CreateTagger<T>(ITextBuffer buffer) where T : ITag
