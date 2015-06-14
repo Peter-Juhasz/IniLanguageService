@@ -13,11 +13,13 @@ namespace IniLanguageService
     [Export(typeof(IViewTaggerProvider))]
     [TagType(typeof(ITextMarkerTag))]
     [ContentType(IniContentTypeNames.Ini)]
-    internal class IniHighlightReferencesTaggerProvider : IViewTaggerProvider
+    internal sealed class IniHighlightReferencesTaggerProvider : IViewTaggerProvider
     {
         public ITagger<T> CreateTagger<T>(ITextView textView, ITextBuffer buffer) where T : ITag
         {
-            return new IniHighlightReferencesTagger(textView) as ITagger<T>;
+            return textView.Properties.GetOrCreateSingletonProperty(
+                creator: () => new IniHighlightReferencesTagger(textView)
+            ) as ITagger<T>;
         }
 
 

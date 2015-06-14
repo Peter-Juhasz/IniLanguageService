@@ -12,7 +12,7 @@ namespace IniLanguageService
     [Export(typeof(IClassifierProvider))]
     [ContentType(IniContentTypeNames.Ini)] // This classifier applies to all text files.
     [Order(Before = Priority.High)]
-    internal class IniClassifierProvider : IClassifierProvider
+    internal sealed class IniClassifierProvider : IClassifierProvider
     {
         // Disable "Field is never assigned to..." compiler's warning. Justification: the field is assigned by MEF.
 #pragma warning disable 649
@@ -25,7 +25,7 @@ namespace IniLanguageService
         private IClassificationTypeRegistryService classificationRegistry;
 
         [Import("INI")]
-        private ILexicalParser lexicalParser;
+        private ISyntacticParser lexicalParser;
 
 #pragma warning restore 649
 

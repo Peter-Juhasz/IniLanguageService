@@ -12,11 +12,13 @@ namespace IniLanguageService
     [Export(typeof(IQuickInfoSourceProvider))]
     [Name("INI Quick Info Provider")]
     [ContentType(IniContentTypeNames.Ini)]
-    internal class IniQuickInfoSourceProvider : IQuickInfoSourceProvider
+    internal sealed class IniQuickInfoSourceProvider : IQuickInfoSourceProvider
     {
         public IQuickInfoSource TryCreateQuickInfoSource(ITextBuffer textBuffer)
         {
-            return new IniQuickInfoSource(textBuffer);
+            return textBuffer.Properties.GetOrCreateSingletonProperty(
+                creator: () => new IniQuickInfoSource(textBuffer)
+            );
         }
 
 

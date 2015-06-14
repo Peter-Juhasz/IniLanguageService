@@ -8,8 +8,8 @@ using System.Linq;
 
 namespace IniLanguageService.Syntax
 {
-    [Export("INI", typeof(ILexicalParser))]
-    internal class IniLexicalParser : ILexicalParser
+    [Export("INI", typeof(ISyntacticParser))]
+    internal sealed class IniLexicalParser : ISyntacticParser
     {
         [ImportingConstructor]
         public IniLexicalParser(IClassificationTypeRegistryService registry)

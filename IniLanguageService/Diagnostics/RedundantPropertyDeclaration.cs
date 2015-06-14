@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace IniLanguageService.Diagnostics
 {
-    internal class RedundantPropertyDeclaration : ISyntaxNodeAnalyzer<IniPropertySyntax>
+    internal sealed class RedundantPropertyDeclaration : ISyntaxNodeAnalyzer<IniPropertySyntax>
     {
         public const string Id = nameof(RedundantPropertyDeclaration);
 

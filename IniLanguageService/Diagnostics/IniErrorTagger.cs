@@ -13,11 +13,13 @@ namespace IniLanguageService
     [Export(typeof(ITaggerProvider))]
     [TagType(typeof(IErrorTag))]
     [ContentType(IniContentTypeNames.Ini)]
-    internal class IniErrorTaggerProvider : ITaggerProvider
+    internal sealed class IniErrorTaggerProvider : ITaggerProvider
     {
         public ITagger<T> CreateTagger<T>(ITextBuffer buffer) where T : ITag
         {
-            return new IniErrorTagger() as ITagger<T>;
+            return buffer.Properties.GetOrCreateSingletonProperty(
+                creator: () => new IniErrorTagger()
+            ) as ITagger<T>;
         }
 
 
@@ -32,6 +34,7 @@ namespace IniLanguageService
                 return
                     from section in root.Sections
                     where spans.Any(s => section.Span.IntersectsWith(s))
+
                     from diagnostic in Analyze(section)
                     where spans.Any(s => diagnostic.Span.IntersectsWith(s))
                     select diagnostic

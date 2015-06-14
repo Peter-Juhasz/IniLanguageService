@@ -29,9 +29,9 @@ namespace IniLanguageService
         /// Initializes a new instance of the <see cref="IniClassifier"/> class.
         /// </summary>
         /// <param name="registry">Classification registry.</param>
-        internal IniClassifier(ITextBuffer buffer, ILexicalParser lexicalParser, IClassificationTypeRegistryService registry)
+        internal IniClassifier(ITextBuffer buffer, ISyntacticParser lexicalParser, IClassificationTypeRegistryService registry)
         {
-            _lexicalParser = buffer.Properties.GetOrCreateSingletonProperty<ILexicalParser>(() => lexicalParser);
+            _lexicalParser = buffer.Properties.GetOrCreateSingletonProperty<ISyntacticParser>(() => lexicalParser);
 
             _commentType = registry.GetClassificationType(PredefinedClassificationTypeNames.Comment);
             _delimiterType = registry.GetClassificationType("INI/Delimiter");
@@ -40,28 +40,14 @@ namespace IniLanguageService
             _sectionNameType = registry.GetClassificationType("INI/SectionName");
             
             buffer.ChangedHighPriority += OnBufferChanged;
-
-            SyntaxTree syntaxTree = buffer.GetSyntaxTree();
-            buffer.Properties.AddProperty(typeof(SyntaxTree), syntaxTree);
         }
 
-        private readonly ILexicalParser _lexicalParser;
+        private readonly ISyntacticParser _lexicalParser;
 
         private void OnBufferChanged(object sender, TextContentChangedEventArgs e)
         {
             ITextBuffer buffer = sender as ITextBuffer;
             
-            // reparse
-            SyntaxTree syntaxTree = buffer.GetSyntaxTree();
-            IniDocumentSyntax root = syntaxTree.Root as IniDocumentSyntax;
-
-            if (syntaxTree.Snapshot != buffer.CurrentSnapshot)
-            {
-                buffer.Properties.RemoveProperty(typeof(SyntaxTree));
-                syntaxTree = _lexicalParser.Parse(buffer.CurrentSnapshot);
-                buffer.Properties.AddProperty(typeof(SyntaxTree), syntaxTree);
-            }
-
             // format
             if (e.Changes.Count == 1)
             {
@@ -72,6 +58,9 @@ namespace IniLanguageService
                     // format on ']'
                     if (change.NewText == "]")
                     {
+                        SyntaxTree syntaxTree = buffer.GetSyntaxTree();
+                        IniDocumentSyntax root = syntaxTree.Root as IniDocumentSyntax;
+
                         IniSectionSyntax section = root.Sections
                             .FirstOrDefault(s => s.ClosingBracketToken.Span.Span == change.NewSpan);
 
@@ -94,6 +83,9 @@ namespace IniLanguageService
                     // format on '='
                     else if (change.NewText == "=")
                     {
+                        SyntaxTree syntaxTree = buffer.GetSyntaxTree();
+                        IniDocumentSyntax root = syntaxTree.Root as IniDocumentSyntax;
+
                         IniPropertySyntax property = root.Sections
                             .SelectMany(s => s.Properties)
                             .FirstOrDefault(p => p.DelimiterToken.Span.Span == change.NewSpan);

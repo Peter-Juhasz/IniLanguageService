@@ -7,7 +7,7 @@ namespace IniLanguageService
         string Id { get; }
     }
 
-    internal class DiagnosticErrorTag : ErrorTag
+    public class DiagnosticErrorTag : ErrorTag
     {
         public DiagnosticErrorTag(string errorType, string id, object toolTipContent)
             : base(errorType, toolTipContent)

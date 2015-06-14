@@ -18,7 +18,7 @@ namespace IniLanguageService
     [Export(typeof(ISuggestedActionsSourceProvider))]
     [Name("Ini Suggested Actions")]
     [ContentType(IniContentTypeNames.Ini)]
-    internal class IniSuggestedActionsProvider : ISuggestedActionsSourceProvider
+    internal sealed class IniSuggestedActionsProvider : ISuggestedActionsSourceProvider
     {
 #pragma warning disable 649
 
@@ -36,11 +36,13 @@ namespace IniLanguageService
 
         public ISuggestedActionsSource CreateSuggestedActionsSource(ITextView textView, ITextBuffer textBuffer)
         {
-            return new IniSuggestedActions(
-                textView, textBuffer,
-                aggregatorFactoryService.CreateTagAggregator<IErrorTag>(textBuffer),
-                codeFixProviders,
-                refactoringProviders
+            return textBuffer.Properties.GetOrCreateSingletonProperty(
+                creator: () => new IniSuggestedActions(
+                    textView, textBuffer,
+                    aggregatorFactoryService.CreateTagAggregator<IErrorTag>(textBuffer),
+                    codeFixProviders,
+                    refactoringProviders
+                )
             );
         }
 

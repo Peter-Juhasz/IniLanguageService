@@ -3,12 +3,12 @@ using System;
 
 namespace IniLanguageService.Syntax
 {
-    public interface ILexicalParser
+    public interface ISyntacticParser
     {
         SyntaxTree Parse(ITextSnapshot snapshot);
     }
 
-    internal static class CommonScanner
+    public static class CommonScanner
     {
         public static SnapshotSpan ReadWhiteSpace(this ITextSnapshot snapshot, ref SnapshotPoint point)
         {

@@ -12,11 +12,13 @@ namespace IniLanguageService
     [Export(typeof(ITaggerProvider))]
     [TagType(typeof(IOutliningRegionTag))]
     [ContentType(IniContentTypeNames.Ini)]
-    internal class IniOutliningTaggerProvider : ITaggerProvider
+    internal sealed class IniOutliningTaggerProvider : ITaggerProvider
     {
         public ITagger<T> CreateTagger<T>(ITextBuffer buffer) where T : ITag
         {
-            return new IniOutliningTagger() as ITagger<T>;
+            return buffer.Properties.GetOrCreateSingletonProperty(
+                creator: () => new IniOutliningTagger()
+            ) as ITagger<T>;
         }
 
 

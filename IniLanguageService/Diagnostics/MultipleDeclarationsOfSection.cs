@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace IniLanguageService.Diagnostics
 {
-    internal class MultipleDeclarationsOfSection : ISyntaxNodeAnalyzer<IniSectionSyntax>
+    internal sealed class MultipleDeclarationsOfSection : ISyntaxNodeAnalyzer<IniSectionSyntax>
     {
         public const string Id = nameof(MultipleDeclarationsOfSection);
 

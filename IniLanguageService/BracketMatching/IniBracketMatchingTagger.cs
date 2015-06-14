@@ -13,11 +13,13 @@ namespace IniLanguageService
     [Export(typeof(IViewTaggerProvider))]
     [TagType(typeof(ITextMarkerTag))]
     [ContentType(IniContentTypeNames.Ini)]
-    internal class IniBracketMatchingTaggerProvider : IViewTaggerProvider
+    internal sealed class IniBracketMatchingTaggerProvider : IViewTaggerProvider
     {
         public ITagger<T> CreateTagger<T>(ITextView textView, ITextBuffer buffer) where T : ITag
         {
-            return new IniBracketMatchingTagger(textView) as ITagger<T>;
+            return textView.Properties.GetOrCreateSingletonProperty(
+                creator: () => new IniBracketMatchingTagger(textView)
+            ) as ITagger<T>;
         }
 
 

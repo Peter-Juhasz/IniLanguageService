@@ -42,14 +42,30 @@ namespace IniLanguageService.Syntax
             ITextBuffer buffer = snapshot.TextBuffer;
 
             SyntaxTree syntaxTree = null;
-            buffer.Properties.TryGetProperty<SyntaxTree>(typeof(SyntaxTree), out syntaxTree);
 
-            if (syntaxTree == null ||
-                syntaxTree.Snapshot != snapshot)
+            // try get syntax tree
+            lock (buffer.Properties.GetOrCreateSingletonProperty("SyntaxLock", () => new object()))
             {
-                ILexicalParser lexicalParser = null;
-                if (buffer.Properties.TryGetProperty<ILexicalParser>(typeof(ILexicalParser), out lexicalParser))
-                    syntaxTree = lexicalParser.Parse(snapshot);
+                buffer.Properties.TryGetProperty<SyntaxTree>(typeof(SyntaxTree), out syntaxTree);
+
+                // not found, or not for current snapshot
+                if (syntaxTree == null ||
+                    syntaxTree.Snapshot != snapshot)
+                {
+                    // parse
+                    ISyntacticParser lexicalParser = null;
+                    if (buffer.Properties.TryGetProperty<ISyntacticParser>(typeof(ISyntacticParser), out lexicalParser))
+                    {
+                        syntaxTree = lexicalParser.Parse(snapshot);
+
+                        // overwrite syntax tree for current snapshot
+                        if (snapshot == buffer.CurrentSnapshot)
+                        {
+                            buffer.Properties.RemoveProperty(typeof(SyntaxTree));
+                            buffer.Properties.AddProperty(typeof(SyntaxTree), syntaxTree);
+                        }
+                    }
+                }
             }
 
             return syntaxTree;
