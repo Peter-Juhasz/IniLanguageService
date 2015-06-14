@@ -4,20 +4,20 @@
 // </copyright>
 //------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
+using IniLanguageService.Syntax;
+using Microsoft.VisualStudio.Language.StandardClassification;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
-using IniLanguageService.Syntax;
+using System;
+using System.Collections.Generic;
 using System.Linq;
-using Microsoft.VisualStudio.Language.StandardClassification;
 
 namespace IniLanguageService
 {
     /// <summary>
     /// Classifier that classifies all text as an instance of the "IniClassifier" classification type.
     /// </summary>
-    internal class IniClassifier : IClassifier
+    internal sealed class IniClassifier : IClassifier
     {
         private readonly IClassificationType _commentType;
         private readonly IClassificationType _sectionNameType;
@@ -29,9 +29,9 @@ namespace IniLanguageService
         /// Initializes a new instance of the <see cref="IniClassifier"/> class.
         /// </summary>
         /// <param name="registry">Classification registry.</param>
-        internal IniClassifier(ITextBuffer buffer, ISyntacticParser lexicalParser, IClassificationTypeRegistryService registry)
+        public IniClassifier(ITextBuffer buffer, ISyntacticParser syntacticParser, IClassificationTypeRegistryService registry)
         {
-            _lexicalParser = buffer.Properties.GetOrCreateSingletonProperty<ISyntacticParser>(() => lexicalParser);
+            _syntacticParser = buffer.Properties.GetOrCreateSingletonProperty<ISyntacticParser>(() => syntacticParser);
 
             _commentType = registry.GetClassificationType(PredefinedClassificationTypeNames.Comment);
             _delimiterType = registry.GetClassificationType("INI/Delimiter");
@@ -42,7 +42,7 @@ namespace IniLanguageService
             buffer.ChangedHighPriority += OnBufferChanged;
         }
 
-        private readonly ISyntacticParser _lexicalParser;
+        private readonly ISyntacticParser _syntacticParser;
 
         private void OnBufferChanged(object sender, TextContentChangedEventArgs e)
         {

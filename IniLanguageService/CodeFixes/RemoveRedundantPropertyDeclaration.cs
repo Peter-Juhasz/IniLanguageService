@@ -27,7 +27,7 @@ namespace IniLanguageService.CodeFixes
             SyntaxTree syntax = buffer.GetSyntaxTree();
             IniDocumentSyntax root = syntax.Root as IniDocumentSyntax;
 
-            // find section
+            // find property
             IniPropertySyntax property = root.Sections
                 .SelectMany(s => s.Properties)
                 .First(s => s.Span == span);

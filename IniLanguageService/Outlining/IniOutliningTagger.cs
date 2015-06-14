@@ -32,8 +32,8 @@ namespace IniLanguageService
 
                 return
                     from section in root.Sections
-                    where section.Properties.Count > 0
-                    where spans.Any(s => section.Span.IntersectsWith(s))
+                    where section.Properties.Any()
+                    where spans.IntersectsWith(section.Span)
                     let last = section.Properties.Last()
                     let collapsibleSpan = new SnapshotSpan(
                         section.ClosingBracketToken.Span.Span.End,

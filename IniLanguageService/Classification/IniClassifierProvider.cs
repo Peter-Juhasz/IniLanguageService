@@ -25,7 +25,7 @@ namespace IniLanguageService
         private IClassificationTypeRegistryService classificationRegistry;
 
         [Import("INI")]
-        private ISyntacticParser lexicalParser;
+        private ISyntacticParser syntacticParser;
 
 #pragma warning restore 649
 
@@ -37,8 +37,8 @@ namespace IniLanguageService
         /// <returns>A classifier for the text buffer, or null if the provider cannot do so in its current state.</returns>
         public IClassifier GetClassifier(ITextBuffer buffer)
         {
-            return buffer.Properties.GetOrCreateSingletonProperty<IniClassifier>(
-                creator: () => new IniClassifier(buffer, lexicalParser, this.classificationRegistry)
+            return buffer.Properties.GetOrCreateSingletonProperty(
+                creator: () => new IniClassifier(buffer, syntacticParser, this.classificationRegistry)
             );
         }
     }

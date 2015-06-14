@@ -45,11 +45,10 @@ namespace IniLanguageService
             {
                 ITextBuffer buffer = spans.First().Snapshot.TextBuffer;
                 SyntaxTree syntax = buffer.GetSyntaxTree();
-                IniDocumentSyntax root = syntax.Root as IniDocumentSyntax;
 
                 return
                     // find intersecting nodes
-                    from node in root.DescendantsAndSelf()
+                    from node in syntax.Root.DescendantsAndSelf()
                     where spans.IntersectsWith(node.Span)
                     let type = node.GetType()
                     
@@ -66,7 +65,6 @@ namespace IniLanguageService
                         .MakeGenericType(analyzerNodeType)
                         .GetMethod("Analyze")
                         .Invoke(analyzer, new [] { node }) as IEnumerable<ITagSpan<IErrorTag>>
-                    where spans.IntersectsWith(diagnostic.Span)
                     select diagnostic
                 ;
             }

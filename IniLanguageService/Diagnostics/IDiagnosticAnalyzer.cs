@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.Composition;
+﻿using System;
+using System.ComponentModel.Composition;
 
 namespace IniLanguageService.Diagnostics
 {
@@ -6,6 +7,7 @@ namespace IniLanguageService.Diagnostics
     {
     }
 
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
     public class ExportDiagnosticAnalyzer : ExportAttribute
     {
         public ExportDiagnosticAnalyzer()

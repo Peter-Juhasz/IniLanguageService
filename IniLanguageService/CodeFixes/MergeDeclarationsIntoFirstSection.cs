@@ -1,4 +1,5 @@
 ﻿using IniLanguageService.CodeRefactorings;
+using IniLanguageService.Diagnostics;
 using IniLanguageService.Syntax;
 using Microsoft.VisualStudio.Text;
 using System;
@@ -13,7 +14,7 @@ namespace IniLanguageService.CodeFixes
     {
         private static readonly IReadOnlyCollection<string> FixableIds = new string[]
         {
-            "MultipleDeclarationsOfSection"
+            MultipleDeclarationsOfSection.Id
         };
 
         public IEnumerable<string> FixableDiagnosticIds
