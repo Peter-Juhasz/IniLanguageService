@@ -59,7 +59,8 @@
     <Compile Include="Diagnostics\MultipleDeclarationsOfSection.cs" />
     <Compile Include="Diagnostics\RedundantPropertyDeclaration.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="ReferenceHighlighting\IniHighlightReferencesTagger.cs" />
+    <Compile Include="ReferenceHighlighting\IniHighlightSectionInQualifiedPropertyNamesTagger.cs" />
+    <Compile Include="ReferenceHighlighting\IniHighlightMultipleReferencesTagger.cs" />
     <Compile Include="QuickInfo\IniQuickInfoProvider.cs" />
     <Compile Include="SuggestedActions\IniSuggestedActions.cs" />
     <Compile Include="Classification\IniClassifier.cs" />

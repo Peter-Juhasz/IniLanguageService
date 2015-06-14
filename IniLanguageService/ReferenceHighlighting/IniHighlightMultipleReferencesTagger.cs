@@ -13,19 +13,19 @@ namespace IniLanguageService
     [Export(typeof(IViewTaggerProvider))]
     [TagType(typeof(ITextMarkerTag))]
     [ContentType(IniContentTypeNames.Ini)]
-    internal sealed class IniHighlightReferencesTaggerProvider : IViewTaggerProvider
+    internal sealed class IniHighlightMultipleReferencesTaggerProvider : IViewTaggerProvider
     {
         public ITagger<T> CreateTagger<T>(ITextView textView, ITextBuffer buffer) where T : ITag
         {
             return textView.Properties.GetOrCreateSingletonProperty(
-                creator: () => new IniHighlightReferencesTagger(textView)
+                creator: () => new IniHighlightMultipleReferencesTagger(textView)
             ) as ITagger<T>;
         }
 
 
-        private sealed class IniHighlightReferencesTagger : ITagger<ITextMarkerTag>
+        private sealed class IniHighlightMultipleReferencesTagger : ITagger<ITextMarkerTag>
         {
-            public IniHighlightReferencesTagger(ITextView view)
+            public IniHighlightMultipleReferencesTagger(ITextView view)
             {
                 _view = view;
 
@@ -107,7 +107,7 @@ namespace IniLanguageService
                         }
                     }
                 }
-
+                
                 return Enumerable.Empty<TagSpan<ITextMarkerTag>>();
             }
 
