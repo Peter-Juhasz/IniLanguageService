@@ -8,6 +8,8 @@ namespace IniLanguageService.Diagnostics
     [ExportDiagnosticAnalyzer]
     internal sealed class IniPropertySyntaxAnalyzer : ISyntaxNodeAnalyzer<IniPropertySyntax>
     {
+        public const string MissingPropertyNameValueDelimiter = "MissingPropertyNameValueDelimiter";
+
         public IEnumerable<ITagSpan<IErrorTag>> Analyze(IniPropertySyntax property)
         {
             // delimiter missing
@@ -15,7 +17,7 @@ namespace IniLanguageService.Diagnostics
             {
                 yield return new TagSpan<IErrorTag>(
                     property.DelimiterToken.Span.Span,
-                    new DiagnosticErrorTag(PredefinedErrorTypeNames.SyntaxError, "PropertyNameValueDelimiterExpected", "'=' expected")
+                    new DiagnosticErrorTag(PredefinedErrorTypeNames.SyntaxError, "MissingPropertyNameValueDelimiter", "'=' expected")
                 );
             }
         }

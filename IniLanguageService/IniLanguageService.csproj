@@ -42,6 +42,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="CodeFixes\ICodeFixProvider.cs" />
+    <Compile Include="CodeFixes\InsertMissingPropertyNameValueDelimiter.cs" />
+    <Compile Include="CodeFixes\InsertMissingSectionNameClosingBracket.cs" />
     <Compile Include="CodeFixes\RemoveRedundantPropertyDeclaration.cs" />
     <Compile Include="CodeFixes\MergeDeclarationsIntoFirstSection.cs" />
     <Compile Include="CodeRefactorings\CodeAction.cs" />

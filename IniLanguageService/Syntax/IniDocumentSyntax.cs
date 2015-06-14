@@ -49,7 +49,7 @@ namespace IniLanguageService.Syntax
 
         public override IEnumerable<SyntaxNode> Descendants()
         {
-            return this.Sections;
+            return this.Sections.SelectMany(s => s.DescendantsAndSelf());
         }
 
 

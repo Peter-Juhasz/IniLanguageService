@@ -8,6 +8,9 @@ namespace IniLanguageService.Diagnostics
     [ExportDiagnosticAnalyzer]
     internal sealed class IniSectionSyntaxAnalyzer : ISyntaxNodeAnalyzer<IniSectionSyntax>
     {
+        public const string SectionNameExpected = "SectionNameExpected";
+        public const string MissingSectionNameClosingBracketMissing = "MissingSectionNameClosingBracket";
+
         public IEnumerable<ITagSpan<IErrorTag>> Analyze(IniSectionSyntax section)
         {
             // section name is missing
@@ -15,7 +18,7 @@ namespace IniLanguageService.Diagnostics
             {
                 yield return new TagSpan<IErrorTag>(
                     section.NameToken.Span.Span,
-                    new ErrorTag(PredefinedErrorTypeNames.SyntaxError, "Section name expected")
+                    new DiagnosticErrorTag(PredefinedErrorTypeNames.SyntaxError, SectionNameExpected, "Section name expected")
                 );
             }
 
@@ -24,7 +27,7 @@ namespace IniLanguageService.Diagnostics
             {
                 yield return new TagSpan<IErrorTag>(
                     section.ClosingBracketToken.Span.Span,
-                    new DiagnosticErrorTag(PredefinedErrorTypeNames.SyntaxError, "SectionNameClosingBracketMissing", "']' expected")
+                    new DiagnosticErrorTag(PredefinedErrorTypeNames.SyntaxError, MissingSectionNameClosingBracketMissing, "']' expected")
                 );
             }
         }
