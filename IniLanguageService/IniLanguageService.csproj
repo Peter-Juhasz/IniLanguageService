@@ -59,6 +59,7 @@
     <Compile Include="Diagnostics\MultipleDeclarationsOfSection.cs" />
     <Compile Include="Diagnostics\RedundantPropertyDeclaration.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="QuickInfo\QuickInfoContent.cs" />
     <Compile Include="ReferenceHighlighting\IniHighlightSectionInQualifiedPropertyNamesTagger.cs" />
     <Compile Include="ReferenceHighlighting\IniHighlightMultipleReferencesTagger.cs" />
     <Compile Include="QuickInfo\IniQuickInfoProvider.cs" />
@@ -104,6 +105,13 @@
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Page Include="Themes\Generic.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
