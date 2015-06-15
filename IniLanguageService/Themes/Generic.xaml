@@ -14,9 +14,9 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            
+           
             <Image Source="{Binding Path=Glyph}" Margin="1,1,3,1" />
-            <TextBlock Text="{Binding Path=Signature}" Grid.Column="1" />
+            <ContentPresenter Content="{Binding Path=Signature}" Grid.Column="1" />
             <TextBlock Text="{Binding Path=Documentation}" Grid.Row="1" Grid.ColumnSpan="2">
                 <FrameworkElement.Style>
                     <Style TargetType="FrameworkElement">

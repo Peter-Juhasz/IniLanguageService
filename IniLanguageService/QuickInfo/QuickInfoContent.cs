@@ -1,4 +1,5 @@
-﻿using System.Windows.Media;
+﻿using System.Windows.Documents;
+using System.Windows.Media;
 
 namespace IniLanguageService.QuickInfo
 {
@@ -6,7 +7,7 @@ namespace IniLanguageService.QuickInfo
     {
         public ImageSource Glyph { get; set; }
 
-        public string Signature { get; set; }
+        public Inline Signature { get; set; }
 
         public string Documentation { get; set; }
     }
