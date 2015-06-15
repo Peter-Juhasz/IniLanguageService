@@ -74,10 +74,9 @@ namespace IniLanguageService
                     IReadOnlyCollection<IniPropertySyntax> matchingProperties = matchingSections
                         .SelectMany(s => s.Properties)
                         .Where(p => p.NameToken.Value.StartsWith(sectionName, StringComparison.InvariantCultureIgnoreCase))
-                        .Where(p => p.NameToken.Span.Span.Length > sectionName.Length)
+                        .Where(p => p.NameToken.Value.Length > sectionName.Length)
                         .Where(p => Delimiters.Contains(p.NameToken.Value[sectionName.Length]))
-                        .ToList()
-                    ;
+                        .ToList();
 
                     if (matchingProperties.Any())
                     {

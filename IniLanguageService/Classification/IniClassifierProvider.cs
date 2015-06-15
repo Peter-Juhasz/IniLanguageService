@@ -14,7 +14,6 @@ namespace IniLanguageService
     [Order(Before = Priority.High)]
     internal sealed class IniClassifierProvider : IClassifierProvider
     {
-        // Disable "Field is never assigned to..." compiler's warning. Justification: the field is assigned by MEF.
 #pragma warning disable 649
 
         /// <summary>
