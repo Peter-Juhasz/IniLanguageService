@@ -55,8 +55,34 @@ namespace IniLanguageService
 
                 if (change.OldLength == 0 && change.NewLength == 1)
                 {
+                    // complete bracket on '['
+                    if (change.NewText == "[")
+                    {
+                        SyntaxTree syntaxTree = buffer.GetSyntaxTree();
+                        IniDocumentSyntax root = syntaxTree.Root as IniDocumentSyntax;
+
+                        IniSectionSyntax section = root.Sections
+                            .FirstOrDefault(s => s.OpeningBracketToken.Span.Span == change.NewSpan);
+
+                        if (section != null)
+                        {
+                            if (section.NameToken.IsMissing &&
+                                section.ClosingBracketToken.IsMissing)
+                            {
+                                // complete pair
+                                using (ITextEdit edit = buffer.CreateEdit())
+                                {
+                                    // TODO: Do not move caret
+                                    //edit.Insert(change.NewSpan.End, "]");
+
+                                    edit.Apply();
+                                }
+                            }
+                        }
+                    }
+
                     // format on ']'
-                    if (change.NewText == "]")
+                    else if (change.NewText == "]")
                     {
                         SyntaxTree syntaxTree = buffer.GetSyntaxTree();
                         IniDocumentSyntax root = syntaxTree.Root as IniDocumentSyntax;
