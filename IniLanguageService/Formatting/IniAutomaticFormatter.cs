@@ -11,6 +11,7 @@ using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Microsoft.VisualStudio.Text.Operations;
 
 namespace IniLanguageService.Formatting
 {
@@ -27,6 +28,9 @@ namespace IniLanguageService.Formatting
         [Import]
         private ITextDocumentFactoryService TextDocumentFactoryService;
 
+        [Import]
+        private ITextBufferUndoManagerProvider _textBufferUndoManagerProvider;
+
 #pragma warning restore 169
 
 
@@ -36,7 +40,9 @@ namespace IniLanguageService.Formatting
             Debug.Assert(view != null);
             
             // register command filter
-            CommandFilter filter = new CommandFilter(view);
+            CommandFilter filter = new CommandFilter(view,
+                _textBufferUndoManagerProvider.GetTextBufferUndoManager(view.TextBuffer).TextBufferUndoHistory
+            );
 
             IOleCommandTarget next;
             ErrorHandler.ThrowOnFailure(textViewAdapter.AddCommandFilter(filter, out next));
@@ -46,47 +52,20 @@ namespace IniLanguageService.Formatting
 
         private sealed class CommandFilter : IOleCommandTarget
         {
-            public CommandFilter(ITextView view)
+            public CommandFilter(ITextView view, ITextUndoHistory undoHistory)
             {
                 _textView = view;
+                _undoHistory = undoHistory;
             }
 
             private readonly ITextView _textView;
+            private readonly ITextUndoHistory _undoHistory;
 
 
             public void OnCharTyped(char @char)
             {
-                // complete brace '['
-                if (@char == '[')
-                {
-                    ITextBuffer buffer = _textView.TextBuffer;
-                    
-                    SyntaxTree syntaxTree = buffer.GetSyntaxTree();
-                    IniDocumentSyntax root = syntaxTree.Root as IniDocumentSyntax;
-
-                    var caret = _textView.Caret.Position.BufferPosition;
-                    IniSectionSyntax section = root.Sections
-                        .FirstOrDefault(s => s.OpeningBracketToken.Span.Span.End == caret);
-
-                    if (section != null)
-                    {
-                        if (section.NameToken.IsMissing &&
-                            section.ClosingBracketToken.IsMissing)
-                        {
-                            // complete pair
-                            using (ITextEdit edit = buffer.CreateEdit())
-                            {
-                                // TODO: Do not move caret
-                                //edit.Insert(change.NewSpan.End, "]");
-
-                                edit.Apply();
-                            }
-                        }
-                    }
-                }
-
                 // format on ']'
-                else if (@char == ']')
+                if (@char == ']')
                 {
                     ITextBuffer buffer = _textView.TextBuffer;
 
@@ -100,15 +79,22 @@ namespace IniLanguageService.Formatting
                     if (section != null)
                     {
                         // remove unnecessary whitespace
-                        using (ITextEdit format = buffer.CreateEdit())
+                        using (ITextUndoTransaction transaction = _undoHistory.CreateTransaction("Automatic Formatting"))
                         {
-                            if (section.OpeningBracketToken.Span.Span.End != section.NameToken.Span.Span.Start)
-                                format.Delete(new SnapshotSpan(section.OpeningBracketToken.Span.Span.End, section.NameToken.Span.Span.Start));
+                            using (ITextEdit format = buffer.CreateEdit())
+                            {
+                                // between '[' and 'name'
+                                if (section.OpeningBracketToken.Span.Span.End != section.NameToken.Span.Span.Start)
+                                    format.Delete(new SnapshotSpan(section.OpeningBracketToken.Span.Span.End, section.NameToken.Span.Span.Start));
 
-                            if (section.NameToken.Span.Span.End != section.ClosingBracketToken.Span.Span.Start)
-                                format.Delete(new SnapshotSpan(section.NameToken.Span.Span.End, section.ClosingBracketToken.Span.Span.Start));
+                                // between 'name' and ']'
+                                if (section.NameToken.Span.Span.End != section.ClosingBracketToken.Span.Span.Start)
+                                    format.Delete(new SnapshotSpan(section.NameToken.Span.Span.End, section.ClosingBracketToken.Span.Span.Start));
 
-                            format.Apply();
+                                format.Apply();
+                            }
+
+                            transaction.Complete();
                         }
                     }
                 }
@@ -146,14 +132,21 @@ namespace IniLanguageService.Formatting
 
                         SnapshotSpan referenceIndent = new SnapshotSpan(referenceLine.Start, referencePoint);
                         SnapshotSpan indent = new SnapshotSpan(line.Start, property.NameToken.Span.Span.Start);
-
+                        
                         if (referenceIndent.GetText() != indent.GetText())
                         {
-                            using (ITextEdit edit = buffer.CreateEdit())
+                            // fix indentation
+                            using (ITextUndoTransaction transaction = _undoHistory.CreateTransaction("Automatic Formatting"))
                             {
-                                edit.Replace(indent, referenceIndent.GetText());
+                                using (ITextEdit edit = buffer.CreateEdit())
+                                {
+                                    // replace leading white space
+                                    edit.Replace(indent, referenceIndent.GetText());
 
-                                edit.Apply();
+                                    edit.Apply();
+                                }
+
+                                transaction.Complete();
                             }
                         }
                     }

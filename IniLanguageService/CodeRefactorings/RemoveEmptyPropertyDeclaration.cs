@@ -35,7 +35,7 @@ namespace IniLanguageService.CodeRefactorings
             ITextEdit edit = buffer.CreateEdit();
             
             ITextSnapshotLine line = property.Span.Start.GetContainingLine();
-            edit.Delete(new SnapshotSpan(line.Start, line.EndIncludingLineBreak));
+            edit.Delete(line.ExtentIncludingLineBreak);
 
             return edit;
         }

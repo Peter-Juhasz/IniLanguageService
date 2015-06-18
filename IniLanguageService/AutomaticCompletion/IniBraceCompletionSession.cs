@@ -49,10 +49,10 @@ namespace IniLanguageService.AutomaticCompletion
                 ITextUndoHistory undoHistory, IEditorOperations editorOperations
             )
             {
-                this.TextView = textView;
-                this.SubjectBuffer = textView.TextBuffer;
-                this.OpeningPoint = this.SubjectBuffer.CurrentSnapshot.CreateTrackingPoint(openingPoint, PointTrackingMode.Negative);
-                this.ClosingPoint = this.SubjectBuffer.CurrentSnapshot.CreateTrackingPoint(openingPoint, PointTrackingMode.Positive);
+                TextView = textView;
+                SubjectBuffer = textView.TextBuffer;
+                OpeningPoint = SubjectBuffer.CurrentSnapshot.CreateTrackingPoint(openingPoint, PointTrackingMode.Negative);
+                ClosingPoint = SubjectBuffer.CurrentSnapshot.CreateTrackingPoint(openingPoint, PointTrackingMode.Positive);
 
                 _undoHistory = undoHistory;
                 _editorOperations = editorOperations;
@@ -75,17 +75,17 @@ namespace IniLanguageService.AutomaticCompletion
                 SnapshotPoint beforePoint = TextView.Caret.Position.BufferPosition;
                 ITrackingPoint beforeTrackingPoint = beforePoint.Snapshot.CreateTrackingPoint(beforePoint.Position, PointTrackingMode.Negative);
 
-                ITextSnapshot snapshot = this.SubjectBuffer.CurrentSnapshot;
+                ITextSnapshot snapshot = SubjectBuffer.CurrentSnapshot;
 
                 using (ITextUndoTransaction transation = _undoHistory.CreateTransaction("Brace Completion"))
                 {
                     // insert closing pair
-                    using (ITextEdit edit = this.SubjectBuffer.CreateEdit())
+                    using (ITextEdit edit = SubjectBuffer.CreateEdit())
                     {
-                        SnapshotPoint closingSnapshotPoint = this.ClosingPoint.GetPoint(snapshot);
+                        SnapshotPoint closingSnapshotPoint = ClosingPoint.GetPoint(snapshot);
 
                         // insert closing pair
-                        edit.Insert(closingSnapshotPoint, this.ClosingBrace.ToString());
+                        edit.Insert(closingSnapshotPoint, ClosingBrace.ToString());
 
                         snapshot = edit.Apply();
                     }
@@ -106,7 +106,7 @@ namespace IniLanguageService.AutomaticCompletion
                 handledCommand = false;
 
                 // get caret position
-                SnapshotPoint? caret = TextView.Caret.Position.Point.GetPoint(this.SubjectBuffer, PositionAffinity.Predecessor);
+                SnapshotPoint? caret = TextView.Caret.Position.Point.GetPoint(SubjectBuffer, PositionAffinity.Predecessor);
                 if (caret == null)
                     return;
 
@@ -128,7 +128,7 @@ namespace IniLanguageService.AutomaticCompletion
                 handledCommand = false;
 
                 // get caret position
-                SnapshotPoint? caret = TextView.Caret.Position.Point.GetPoint(this.SubjectBuffer, PositionAffinity.Predecessor);
+                SnapshotPoint? caret = TextView.Caret.Position.Point.GetPoint(SubjectBuffer, PositionAffinity.Predecessor);
                 if (caret == null)
                     return;
 
