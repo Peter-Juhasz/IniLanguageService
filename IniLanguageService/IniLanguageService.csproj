@@ -41,6 +41,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AutomaticCompletion\IniBraceCompletionSession.cs" />
     <Compile Include="CodeFixes\ICodeFixProvider.cs" />
     <Compile Include="CodeFixes\InsertMissingPropertyNameValueDelimiter.cs" />
     <Compile Include="CodeFixes\InsertMissingSectionNameClosingBracket.cs" />
@@ -75,7 +76,7 @@
     <Compile Include="Outlining\IniOutliningTagger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Syntax\ISyntacticParser.cs" />
-    <Compile Include="Syntax\IniLexicalParser.cs" />
+    <Compile Include="Syntax\IniSyntacticParser.cs" />
     <Compile Include="Syntax\IniPropertySyntax.cs" />
     <Compile Include="Syntax\SyntaxNode.cs" />
     <Compile Include="Syntax\IniSectionSyntax.cs" />

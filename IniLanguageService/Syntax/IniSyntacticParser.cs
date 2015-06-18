@@ -9,10 +9,10 @@ using System.Linq;
 namespace IniLanguageService.Syntax
 {
     [Export("INI", typeof(ISyntacticParser))]
-    internal sealed class IniLexicalParser : ISyntacticParser
+    internal sealed class IniSyntacticParser : ISyntacticParser
     {
         [ImportingConstructor]
-        public IniLexicalParser(IClassificationTypeRegistryService registry)
+        public IniSyntacticParser(IClassificationTypeRegistryService registry)
         {
             _commentType = registry.GetClassificationType(PredefinedClassificationTypeNames.Comment);
             _delimiterType = registry.GetClassificationType("INI/Delimiter");
@@ -121,7 +121,8 @@ namespace IniLanguageService.Syntax
                 foreach (var trivia in leadingTrivia)
                     section.TrailingTrivia.Add(trivia);
 
-            root.Sections.Add(section);
+            if (section != null)
+                root.Sections.Add(section);
 
             return new SyntaxTree(snapshot, root);
         }
