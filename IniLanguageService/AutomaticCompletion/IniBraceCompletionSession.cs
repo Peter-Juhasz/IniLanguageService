@@ -115,7 +115,8 @@ namespace IniLanguageService.AutomaticCompletion
                 SnapshotPoint closingPoint = ClosingPoint.GetPoint(snapshot);
 
                 // check caret position
-                if (caret != closingPoint - 1)
+                SnapshotSpan inBetween = new SnapshotSpan(caret.Value, closingPoint - 1);
+                if (!String.IsNullOrWhiteSpace(inBetween.GetText()))
                     return;
                 
                 // move caret after the closing brace
