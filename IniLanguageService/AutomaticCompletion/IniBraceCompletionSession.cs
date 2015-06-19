@@ -1,10 +1,12 @@
-﻿using Microsoft.VisualStudio.Text;
+﻿using IniLanguageService.Syntax;
+using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.BraceCompletion;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Utilities;
 using System;
 using System.ComponentModel.Composition;
+using System.Linq;
 
 namespace IniLanguageService.AutomaticCompletion
 {
@@ -28,7 +30,19 @@ namespace IniLanguageService.AutomaticCompletion
         {
             ITextSnapshotLine line = openingPoint.GetContainingLine();
             
-            if (!line.GetText().TrimStart().StartsWith("["))
+            // get syntax tree
+            SyntaxTree syntaxTree = openingPoint.Snapshot.GetSyntaxTree();
+            IniDocumentSyntax root = syntaxTree.Root as IniDocumentSyntax;
+
+            // check for completion
+            bool intersectsWithAnySectionHeader = root.Sections.Any(s =>
+                new SnapshotSpan(
+                    s.OpeningBracketToken.Span.Span.Start,
+                    s.ClosingBracketToken.Span.Span.Start
+                ).IntersectsWith(line.Extent)
+            );
+
+            if (!intersectsWithAnySectionHeader)
             {
                 session = new IniBraceCompletionSession(
                     textView, openingPoint,
