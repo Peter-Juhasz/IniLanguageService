@@ -48,14 +48,14 @@ namespace IniLanguageService.Syntax
                 char first = cursor.GetChar();
 
                 // comment
-                if (first == ';')
+                if (first == IniSyntaxFacts.Comment)
                 {
                     SnapshotToken commentToken = new SnapshotToken(snapshot.ReadComment(ref cursor), _commentType);
                     leadingTrivia.Add(commentToken);
                 }
 
                 // section
-                else if (first == '[')
+                else if (first == IniSyntaxFacts.SectionNameOpeningBracket)
                 {
                     if (section != null)
                         root.Sections.Add(section);
@@ -137,7 +137,9 @@ namespace IniLanguageService.Syntax
 
             var @char = point.GetChar();
 
-            if (@char != '[' && @char != ']' && @char != '=')
+            if (@char != IniSyntaxFacts.SectionNameOpeningBracket &&
+                @char != IniSyntaxFacts.SectionNameClosingBracket &&
+                @char != IniSyntaxFacts.PropertyNameValueDelimiter)
                 return new SnapshotSpan(point, 0);
 
             point = point + 1;
@@ -145,11 +147,11 @@ namespace IniLanguageService.Syntax
         }
         public static SnapshotSpan ReadSectionName(this ITextSnapshot snapshot, ref SnapshotPoint point)
         {
-            return snapshot.ReadToCommentOrLineEndWhile(ref point, c => c != ']');
+            return snapshot.ReadToCommentOrLineEndWhile(ref point, c => c != IniSyntaxFacts.SectionNameClosingBracket);
         }
         public static SnapshotSpan ReadPropertyName(this ITextSnapshot snapshot, ref SnapshotPoint point)
         {
-            return snapshot.ReadToCommentOrLineEndWhile(ref point, c => c != '=');
+            return snapshot.ReadToCommentOrLineEndWhile(ref point, c => c != IniSyntaxFacts.PropertyNameValueDelimiter);
         }
         public static SnapshotSpan ReadPropertyValue(this ITextSnapshot snapshot, ref SnapshotPoint point)
         {
@@ -158,7 +160,7 @@ namespace IniLanguageService.Syntax
 
         public static SnapshotSpan ReadComment(this ITextSnapshot snapshot, ref SnapshotPoint point)
         {
-            if (point.Position == snapshot.Length || point.GetChar() != ';')
+            if (point.Position == snapshot.Length || point.GetChar() != IniSyntaxFacts.Comment)
                 return new SnapshotSpan(point, 0);
 
             return snapshot.ReadToLineEndWhile(ref point, _ => true);
@@ -166,7 +168,7 @@ namespace IniLanguageService.Syntax
 
         public static SnapshotSpan ReadToCommentOrLineEndWhile(this ITextSnapshot snapshot, ref SnapshotPoint point, Predicate<char> predicate)
         {
-            return snapshot.ReadToLineEndWhile(ref point, c => c != ';' && predicate(c));
+            return snapshot.ReadToLineEndWhile(ref point, c => c != IniSyntaxFacts.Comment && predicate(c));
         }
     }
 }

@@ -12,7 +12,7 @@ namespace IniLanguageService.AutomaticCompletion
 {
     [Export(typeof(IBraceCompletionSessionProvider))]
     [ContentType(IniContentTypeNames.Ini)]
-    [BracePair('[', ']')]
+    [BracePair(IniSyntaxFacts.SectionNameOpeningBracket, IniSyntaxFacts.SectionNameClosingBracket)]
     internal sealed class IniBraceCompletionSessionProvider : IBraceCompletionSessionProvider
     {
 #pragma warning disable 649

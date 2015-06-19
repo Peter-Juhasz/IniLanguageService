@@ -35,7 +35,7 @@ namespace IniLanguageService.CodeFixes
                 .Last();
             
             yield return new CodeAction(
-                $"Fix syntax error: Insert missing '='",
+                $"Fix syntax error: Insert missing '{IniSyntaxFacts.PropertyNameValueDelimiter}'",
                 () => Fix(property)
             );
         }
@@ -45,7 +45,7 @@ namespace IniLanguageService.CodeFixes
             ITextBuffer buffer = property.Section.Document.Snapshot.TextBuffer;
 
             ITextEdit edit = buffer.CreateEdit();
-            edit.Insert(property.NameToken.Span.Span.End, "=");
+            edit.Insert(property.NameToken.Span.Span.End, IniSyntaxFacts.PropertyNameValueDelimiter.ToString());
 
             return edit;
         }

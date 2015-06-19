@@ -34,7 +34,7 @@ namespace IniLanguageService.CodeFixes
                 .Last();
             
             yield return new CodeAction(
-                $"Fix syntax error: Insert missing ']'",
+                $"Fix syntax error: Insert missing '{IniSyntaxFacts.SectionNameClosingBracket}'",
                 () => Fix(section)
             );
         }
@@ -44,7 +44,7 @@ namespace IniLanguageService.CodeFixes
             ITextBuffer buffer = section.Document.Snapshot.TextBuffer;
 
             ITextEdit edit = buffer.CreateEdit();
-            edit.Insert(section.NameToken.Span.Span.End, "]");
+            edit.Insert(section.NameToken.Span.Span.End, IniSyntaxFacts.SectionNameClosingBracket.ToString());
 
             return edit;
         }
