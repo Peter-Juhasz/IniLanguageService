@@ -13,9 +13,8 @@ namespace IniLanguageService
     /// <summary>
     /// Classification type definition export for IniClassifier
     /// </summary>
-    internal static class IniClassifierClassificationDefinition
+    internal static class IniClassifierClassificationDefinitions
     {
-        // This disables "The field is never used" compiler's warning. Justification: the field is used by MEF.
 #pragma warning disable 169
         
         [Export(typeof(ClassificationTypeDefinition))]

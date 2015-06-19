@@ -72,8 +72,8 @@ namespace IniLanguageService.AutomaticCompletion
                 _editorOperations = editorOperations;
             }
 
-            public char OpeningBrace { get { return '['; } }
-            public char ClosingBrace { get { return ']'; } }
+            public char OpeningBrace { get { return IniSyntaxFacts.SectionNameOpeningBracket; } }
+            public char ClosingBrace { get { return IniSyntaxFacts.SectionNameClosingBracket; } }
 
             public ITrackingPoint OpeningPoint { get; private set; }
             public ITrackingPoint ClosingPoint { get; private set; }

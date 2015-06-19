@@ -59,7 +59,7 @@ namespace IniLanguageService
                 // find section
                 IniSectionSyntax section = root.Sections
                     .Where(s => !s.NameToken.IsMissing)
-                    .FirstOrDefault(s => s.Span.Contains(caret));
+                    .FirstOrDefault(s => s.Span.ContainsOrEndsWith(caret));
 
                 // find results
                 if (section != null)
@@ -81,7 +81,7 @@ namespace IniLanguageService
                     if (matchingProperties.Any())
                     {
                         if (section.NameToken.Span.Span.Contains(caret) ||
-                            matchingProperties.Any(p => new SnapshotSpan(p.NameToken.Span.Span.Start, sectionName.Length).Contains(caret)))
+                            matchingProperties.Any(p => new SnapshotSpan(p.NameToken.Span.Span.Start, sectionName.Length).ContainsOrEndsWith(caret)))
                         {
                             foreach (var s in matchingSections)
                                 yield return new TagSpan<ITextMarkerTag>(s.NameToken.Span.Span, DefinitionTag);

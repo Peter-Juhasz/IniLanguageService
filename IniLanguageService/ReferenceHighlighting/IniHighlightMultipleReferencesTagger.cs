@@ -56,7 +56,7 @@ namespace IniLanguageService
 
                 // find section
                 IniSectionSyntax section = root.Sections
-                    .FirstOrDefault(s => s.Span.Contains(caret));
+                    .FirstOrDefault(s => s.Span.ContainsOrEndsWith(caret));
 
                 // show duplicate sections
                 if (section != null)
@@ -65,7 +65,7 @@ namespace IniLanguageService
 
                     // duplicate sections
                     if (!section.NameToken.IsMissing &&
-                         section.NameToken.Span.Span.Contains(caret))
+                         section.NameToken.Span.Span.ContainsOrEndsWith(caret))
                     {
                         var others = section.Document.Sections
                             .Where(
@@ -84,7 +84,7 @@ namespace IniLanguageService
 
                     // duplicate properties
                     IniPropertySyntax property = section.Properties
-                        .FirstOrDefault(p => p.NameToken.Span.Span.Contains(caret));
+                        .FirstOrDefault(p => p.NameToken.Span.Span.ContainsOrEndsWith(caret));
 
                     if (property != null)
                     {
