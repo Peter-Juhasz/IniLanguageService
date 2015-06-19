@@ -3,9 +3,10 @@ This extension adds support for editing .ini configuration files. It is built on
 
 Features:
  - Syntax highlighting and validation
- - Bracket matching
+ - Brace matching
  - Outlining
  - Highlight references (duplicates)
+ - Automatic brace completion
  - Automatic formatting (while typing)
     - Section names (on ']')
     - Indentation of properties (on '=')
