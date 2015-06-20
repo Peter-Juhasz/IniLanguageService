@@ -13,7 +13,7 @@ Features:
  - Diagnostics, code fixes and code refactorings
  - Quick info
 
-![ini](https://cloud.githubusercontent.com/assets/9047283/8263461/1800a96a-16db-11e5-90ae-1526a173faf2.png)
+![ini](https://cloud.githubusercontent.com/assets/9047283/8266788/41fd8df2-1742-11e5-86e3-577baa9b1c44.png)
 
 Diagnostics:
  - Multiple declarations of a section
