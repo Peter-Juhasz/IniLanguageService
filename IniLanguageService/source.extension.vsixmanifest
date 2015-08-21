@@ -1,10 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="IniLanguageService.Juhász Péter.51ce8692-707b-43ca-9986-bd087b376388" Version="1.0" Language="en-US" Publisher="Péter Juhász" />
+    <Identity Id="IniLanguageService.Juhász Péter.51ce8692-707b-43ca-9986-bd087b376388" Version="2.0" Language="en-US" Publisher="Péter Juhász" />
     <DisplayName>INI Language Service</DisplayName>
-    <Description xml:space="preserve">Provides language service for .ini files.</Description>
+    <Description xml:space="preserve">Language service for .ini files.</Description>
     <MoreInfo>https://github.com/Peter-Juhasz/IniLanguageService</MoreInfo>
+    <PreviewImage>preview.png</PreviewImage>
   </Metadata>
   <Installation>
     <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[14.0]" />
