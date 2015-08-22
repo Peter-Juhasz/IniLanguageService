@@ -108,7 +108,7 @@ namespace IniLanguageService.Syntax
                         ValueToken = value,
                         TrailingTrivia = trailingTrivia,
                     };
-                    section.Properties.Add(property);
+                    section?.Properties.Add(property);
                     leadingTrivia = new List<SnapshotToken>();
                 }
 
